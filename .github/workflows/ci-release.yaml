@@ -36,4 +36,4 @@ jobs:
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
           body: ${{ steps.changelog.outputs.changes }}
-          artifacts: dist/spotcli-*.whl
+          artifacts: dist/gdbt-*.whl
