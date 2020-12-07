@@ -126,6 +126,7 @@ class Dashboard(ResourceStencil):
         providers: typing.Dict[str, gdbt.provider.provider.Provider],
     ) -> gdbt.resource.resource.Dashboard:
         model_dict = json.loads(model)
+        model_dict.pop("id", None)
         folder = self.folder if self.folder.startswith("folder_") else f"folder_{self.folder}"
         resource = gdbt.resource.resource.Dashboard(
             grafana=grafana,
