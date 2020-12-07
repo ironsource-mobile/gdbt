@@ -1,0 +1,39 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  Release:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+      - name: Build wheel
+        run: poetry build -f wheel
+      - name: Get tag name
+        id: tag_name
+        run: echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
+      - name: Get entry from changelog
+        id: changelog
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ steps.tag_name.outputs.current_version }}
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: ${{ steps.changelog.outputs.changes }}
+          artifacts: dist/spotcli-*.whl
