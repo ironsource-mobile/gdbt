@@ -22,9 +22,15 @@ class Plan:
                 if outcomes[key].action == "create":
                     spinner.text = f"Creating resource {key}"
                     resource = self.diff.desired.serialize(providers)[key]
-                    resource_cls = type(deserialize.deserialize(gdbt.resource.resource.Resource, resource))
+                    resource_cls = type(
+                        deserialize.deserialize(
+                            gdbt.resource.resource.Resource, resource
+                        )
+                    )
                     resource.pop("kind", None)
-                    resource_created = resource_cls.create(providers=providers, **resource)
+                    resource_created = resource_cls.create(
+                        providers=providers, **resource
+                    )
                     resources.update({key: resource_created})
                     spinner.succeed(f"Created resource {key}")
                 elif outcomes[key].action == "delete":

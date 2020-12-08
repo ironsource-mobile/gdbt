@@ -1,8 +1,10 @@
 import abc
+import json
 import typing
 
 import deserialize  # type: ignore
 
+from gdbt.resource.resource import Resource
 from gdbt.state.state import State
 
 
@@ -22,13 +24,28 @@ class EvaluationProvider(Provider):
 
 class StateProvider(Provider):
     @abc.abstractmethod
-    def get(self) -> State:
+    def _read(self) -> str:
         pass
 
     @abc.abstractmethod
+    def _write(self, content: str) -> None:
+        pass
+
+    def get(self) -> State:
+        resources_dict = json.loads(self._read())
+        resources = {
+            name: deserialize.deserialize(Resource, resource)
+            for name, resource in resources_dict.items()
+        }
+        return State(resources)
+
     def put(
         self,
         state: State,
         providers: typing.Dict[str, Provider],
     ) -> None:
-        pass
+        resources_dict = {
+            name: resource.serialize(providers)
+            for name, resource in state.resources.items()
+        }
+        self._write(json.dumps(resources_dict, indent=2, sort_keys=True))

@@ -5,7 +5,7 @@ import deserialize  # type: ignore
 import ruamel.yaml  # type: ignore
 
 import gdbt.stencil.config
-from gdbt.stencil.stencil import Stencil, ResourceStencil
+from gdbt.stencil.stencil import ResourceStencil, Stencil
 
 yaml = ruamel.yaml.YAML(typ="safe")
 

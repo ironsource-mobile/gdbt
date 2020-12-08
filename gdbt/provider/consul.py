@@ -1,4 +1,3 @@
-import json
 import typing
 import urllib.parse
 
@@ -8,8 +7,6 @@ import deserialize  # type: ignore
 
 import gdbt.errors
 from gdbt.provider.provider import Provider, StateProvider
-from gdbt.resource.resource import Resource
-from gdbt.state.state import State
 
 
 @deserialize.downcast_identifier(Provider, "consul")
@@ -32,7 +29,7 @@ class ConsulProvider(StateProvider):
         )
         return client
 
-    def read(self) -> str:
+    def _read(self) -> str:
         client = self.client()
         try:
             _, document = client.kv.get(self.path)
@@ -43,28 +40,9 @@ class ConsulProvider(StateProvider):
         except consul.ConsulException as exc:
             raise gdbt.errors.ConsulError(str(exc))
 
-    def write(self, content: str) -> None:
+    def _write(self, content: str) -> None:
         client = self.client()
         try:
             client.kv.put(self.path, content)
         except consul.ConsulException as exc:
             raise gdbt.errors.ConsulError(str(exc))
-
-    def get(self) -> State:
-        resources_dict = json.loads(self.read())
-        resources = {
-            name: deserialize.deserialize(Resource, resource)
-            for name, resource in resources_dict.items()
-        }
-        return State(resources)
-
-    def put(
-        self,
-        state: State,
-        providers: typing.Dict[str, Provider],
-    ) -> None:
-        resources_dict = {
-            name: resource.serialize(providers)
-            for name, resource in state.resources.items()
-        }
-        self.write(json.dumps(resources_dict, indent=2, sort_keys=True))

@@ -86,7 +86,9 @@ class StateDiff:
         desired = self.desired.serialize(providers)
         return current, desired
 
-    def keys(self, providers: typing.Dict[str, gdbt.provider.provider.Provider]) -> typing.Set[str]:
+    def keys(
+        self, providers: typing.Dict[str, gdbt.provider.provider.Provider]
+    ) -> typing.Set[str]:
         current, desired = self.serialized(providers)
         keys = set(current.keys()).union(set(desired.keys()))
         return keys
@@ -123,7 +125,9 @@ class StateDiff:
             outcomes.update({key: outcome})
         return outcomes
 
-    def render(self, providers: typing.Dict[str, gdbt.provider.provider.Provider]) -> str:
+    def render(
+        self, providers: typing.Dict[str, gdbt.provider.provider.Provider]
+    ) -> str:
         blocks = []
         diff = self.diff(providers)
         for i in sorted(diff.keys()):

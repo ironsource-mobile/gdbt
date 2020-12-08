@@ -84,7 +84,8 @@ class Folder(Resource):
         except KeyError:
             raise gdbt.errors.DataError("Folder model missing 'title' key")
         except grafana_api.grafana_api.GrafanaException as exc:
-            raise gdbt.errors.GrafanaError(exc.message)
+            if exc.status_code != 412:
+                raise gdbt.errors.GrafanaError(exc.message)
         folder = cls.get(grafana, uid, providers)
         return folder
 

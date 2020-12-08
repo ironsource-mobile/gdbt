@@ -14,15 +14,21 @@ import gdbt.provider.provider
 class Evaluation(abc.ABC):
     source: str = attr.ib()
 
-    def value(self, providers: typing.Dict[str, gdbt.provider.provider.Provider]) -> typing.Any:
+    def value(
+        self, providers: typing.Dict[str, gdbt.provider.provider.Provider]
+    ) -> typing.Any:
         try:
             provider = providers[self.source]
         except KeyError:
             raise gdbt.errors.ProviderNotFound(self.source) from None
-        return self.evaluate(typing.cast(gdbt.provider.provider.EvaluationProvider, provider))
+        return self.evaluate(
+            typing.cast(gdbt.provider.provider.EvaluationProvider, provider)
+        )
 
     @abc.abstractmethod
-    def evaluate(self, provider: gdbt.provider.provider.EvaluationProvider) -> typing.Any:
+    def evaluate(
+        self, provider: gdbt.provider.provider.EvaluationProvider
+    ) -> typing.Any:
         pass
 
 
@@ -32,7 +38,9 @@ class PrometheusEvaluation(Evaluation):
     metric: str = attr.ib()
     label: str = attr.ib()
 
-    def evaluate(self, provider: gdbt.provider.provider.EvaluationProvider) -> typing.Any:
+    def evaluate(
+        self, provider: gdbt.provider.provider.EvaluationProvider
+    ) -> typing.Any:
         filter = jsonpath_ng.parse(f"$[*].metric.{self.label}")
         metric_values = provider.query(self.metric)
         values = [item.value for item in filter.find(metric_values)]

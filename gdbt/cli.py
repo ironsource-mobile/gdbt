@@ -10,9 +10,9 @@ import rich.traceback
 import gdbt
 import gdbt.errors
 import gdbt.provider.provider
-import gdbt.state.state
 import gdbt.state.diff
 import gdbt.state.plan
+import gdbt.state.state
 import gdbt.stencil.load
 
 console = rich.console.Console(highlight=False)
@@ -64,7 +64,8 @@ def plan(config_dir: str) -> None:
             state_current = gdbt.state.state.load(
                 config.state,
                 typing.cast(
-                    typing.Dict[str, gdbt.provider.provider.StateProvider], config.providers
+                    typing.Dict[str, gdbt.provider.provider.StateProvider],
+                    config.providers,
                 ),
             )
 
@@ -126,7 +127,8 @@ def apply(config_dir: str, auto_approve: bool) -> None:
             state_current = gdbt.state.state.load(
                 config.state,
                 typing.cast(
-                    typing.Dict[str, gdbt.provider.provider.StateProvider], config.providers
+                    typing.Dict[str, gdbt.provider.provider.StateProvider],
+                    config.providers,
                 ),
             )
 
@@ -156,7 +158,8 @@ def apply(config_dir: str, auto_approve: bool) -> None:
             gdbt.state.state.push(
                 config.state,
                 typing.cast(
-                    typing.Dict[str, gdbt.provider.provider.StateProvider], config.providers
+                    typing.Dict[str, gdbt.provider.provider.StateProvider],
+                    config.providers,
                 ),
                 state_applied,
             )

@@ -1,4 +1,5 @@
 import abc
+import hashlib
 import json
 import typing
 
@@ -7,9 +8,9 @@ import deserialize  # type: ignore
 
 import gdbt.provider.provider
 import gdbt.resource.resource
-import gdbt.templating.template
-import gdbt.templating.evaluation
 import gdbt.stencil.iterator
+import gdbt.templating.evaluation
+import gdbt.templating.template
 
 
 @deserialize.downcast_field("kind")
@@ -38,10 +39,6 @@ class ResourceStencil(Stencil):
         model: str,
         providers: typing.Dict[str, gdbt.provider.provider.Provider],
     ) -> gdbt.resource.resource.Resource:
-        pass
-
-    @abc.abstractmethod
-    def name_to_uid(self, name: str, loop_item: typing.Any) -> str:
         pass
 
     def resolve_vars(
@@ -104,19 +101,36 @@ class ResourceStencil(Stencil):
             evaluations,
             lookups,
         ):
-            uid = self.name_to_uid(name, item)
+            resource_name = self.format_name(name, item)
+            uid = self.format_uid(resource_name)
             model = gdbt.templating.template.Template(self.model).render(
                 providers, evaluations, lookups, item
             )
             resource = self.make_resource(self.provider, uid, model, providers)
-            resources.update({uid: resource})
+            resources.update({resource_name: resource})
         return resources
+
+    def format_name(
+        self, name: str, loop_item: typing.Optional[typing.Any] = None
+    ) -> str:
+        name = self.kind + "_" + name
+        if loop_item:
+            name += "_" + str(loop_item)
+        return name
+
+    def format_uid(self, name: str) -> str:
+        uid_hash = hashlib.md5()
+        uid_hash.update(name.encode())
+        uid = "gdbt_" + uid_hash.hexdigest()
+        return uid
 
 
 @deserialize.downcast_identifier(Stencil, "dashboard")
 @attr.s(kw_only=True)
 class Dashboard(ResourceStencil):
     folder: str = attr.ib()
+
+    kind = "dashboard"
 
     def make_resource(
         self,
@@ -127,25 +141,26 @@ class Dashboard(ResourceStencil):
     ) -> gdbt.resource.resource.Dashboard:
         model_dict = json.loads(model)
         model_dict.pop("id", None)
-        folder = self.folder if self.folder.startswith("folder_") else f"folder_{self.folder}"
+        folder_name = (
+            self.folder
+            if self.folder.startswith("folder_")
+            else f"folder_{self.folder}"
+        )
+        folder_uid = self.format_uid(folder_name)
         resource = gdbt.resource.resource.Dashboard(
             grafana=grafana,
             uid=uid,
             model=model_dict,
-            folder=folder,
+            folder=folder_uid,
         )
         return resource
-
-    def name_to_uid(self, name: str, loop_item: typing.Optional[typing.Any] = None) -> str:
-        uid = "dashboard_" + name
-        if loop_item:
-            uid += "_" + str(loop_item)
-        return uid
 
 
 @deserialize.downcast_identifier(Stencil, "folder")
 @attr.s(kw_only=True)
 class Folder(ResourceStencil):
+    kind = "folder"
+
     def make_resource(
         self,
         grafana: str,
@@ -160,9 +175,3 @@ class Folder(ResourceStencil):
             model=model_dict,
         )
         return resource
-
-    def name_to_uid(self, name: str, loop_item: typing.Optional[typing.Any] = None) -> str:
-        uid = "folder_" + name
-        if loop_item:
-            uid += "_" + str(loop_item)
-        return uid
