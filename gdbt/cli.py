@@ -81,7 +81,7 @@ def plan(config_dir: str) -> None:
         console.print(state_diff.render(config.providers))
         console.print("\nRun [bold green]gdbt apply[/] to apply these changes\n")
     except gdbt.errors.Error as exc:
-        console.print(f"[red][b]ERROR:[/b] {exc.message}")
+        console.print(f"[red][b]ERROR[/b] {exc.text}")
         raise SystemExit(1)
 
 
@@ -168,7 +168,7 @@ def apply(config_dir: str, auto_approve: bool) -> None:
             f"\n[bold green]Done! Modified {changes} resources in {duration:.2f} seconds."
         )
     except gdbt.errors.Error as exc:
-        console.print(f"[red][b]ERROR:[/b] {exc.message}")
+        console.print(f"[red][b]ERROR[/b] {exc.text}")
         raise SystemExit(1)
 
 

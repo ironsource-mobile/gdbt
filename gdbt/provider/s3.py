@@ -1,3 +1,4 @@
+import pathlib
 import typing
 
 import attr
@@ -9,13 +10,12 @@ import deserialize  # type: ignore
 import gdbt.errors
 from gdbt.provider.provider import Provider, StateProvider
 
-STATE_OBJECT_PATH = "state.json"
-
 
 @deserialize.downcast_identifier(Provider, "s3")
 @attr.s
 class S3Provider(StateProvider):
     bucket: str = attr.ib()
+    path: str = attr.ib()
     access_key_id: typing.Optional[str] = attr.ib()
     secret_access_key: typing.Optional[str] = attr.ib()
 
@@ -27,24 +27,26 @@ class S3Provider(StateProvider):
         )
 
     def _read(self) -> str:
+        path = str(pathlib.Path(self.path))
         s3 = self.client()
         try:
-            object = s3.Object(self.bucket, STATE_OBJECT_PATH)
+            object = s3.Object(self.bucket, path)
             content = object.get()["Body"].read().decode("utf-8")
             return content
         except botocore.exceptions.ClientError as exc:
             errors = {
                 "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
-                "NoSuchKey": gdbt.errors.S3ObjectNotFound(STATE_OBJECT_PATH),
+                "NoSuchKey": gdbt.errors.S3ObjectNotFound(path),
                 "AccessDenied": gdbt.errors.S3AccessDenied(self.bucket),
                 "default": gdbt.errors.S3Error(exc.response.get("message")),
             }
             raise (errors.get(exc.response["Error"]["Code"], errors["default"]))
 
     def _write(self, content: str) -> None:
+        path = str(pathlib.Path(self.path))
         s3 = self.client()
         try:
-            object = s3.Object(self.bucket, STATE_OBJECT_PATH)
+            object = s3.Object(self.bucket, path)
             object.put(Body=content.encode("utf-8"))
         except botocore.exceptions.ClientError as exc:
             errors = {

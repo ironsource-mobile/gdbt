@@ -1,6 +1,7 @@
 import attr
 import deserialize  # type: ignore
 
+import gdbt.errors
 from gdbt.provider.provider import Provider, StateProvider
 
 
@@ -13,9 +14,21 @@ class FileProvider(StateProvider):
         return None
 
     def _read(self) -> str:
-        with open(self.path, "r") as file:
-            return file.read()
+        try:
+            with open(self.path, "r") as file:
+                return file.read()
+        except FileNotFoundError:
+            raise gdbt.errors.FileNotFound(self.path)
+        except PermissionError:
+            raise gdbt.errors.FileAccessDenied(self.path)
+        except OSError as exc:
+            raise gdbt.errors.FileError(str(exc))
 
     def _write(self, content: str) -> None:
-        with open(self.path, "w") as file:
-            file.write(content)
+        try:
+            with open(self.path, "w") as file:
+                file.write(content)
+        except PermissionError:
+            raise gdbt.errors.FileAccessDenied(self.path)
+        except OSError as exc:
+            raise gdbt.errors.FileError(str(exc))

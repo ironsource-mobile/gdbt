@@ -7,8 +7,6 @@ import grafana_api.grafana_api  # type: ignore
 
 import gdbt.errors
 
-# import gdbt.provider.provider
-
 IGNORED_KEYS = ["id", "uid", "version"]
 
 

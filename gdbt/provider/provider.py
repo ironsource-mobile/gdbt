@@ -4,6 +4,7 @@ import typing
 
 import deserialize  # type: ignore
 
+import gdbt.errors
 from gdbt.resource.resource import Resource
 from gdbt.state.state import State
 
@@ -32,11 +33,14 @@ class StateProvider(Provider):
         pass
 
     def get(self) -> State:
-        resources_dict = json.loads(self._read())
-        resources = {
-            name: deserialize.deserialize(Resource, resource)
-            for name, resource in resources_dict.items()
-        }
+        try:
+            resources_dict = json.loads(self._read())
+            resources = {
+                name: deserialize.deserialize(Resource, resource)
+                for name, resource in resources_dict.items()
+            }
+        except (json.JSONDecodeError, deserialize.DeserializeException) as exc:
+            raise gdbt.errors.StateFormatInvalid(str(exc))
         return State(resources)
 
     def put(

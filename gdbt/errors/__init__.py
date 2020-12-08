@@ -2,12 +2,16 @@ class Error(Exception):
     message = "Unknown error"
     code = "ERR_UNKNOWN"
 
+    @property
+    def text(self) -> str:
+        text = f"[{self.code}]: {self.message}"
+        if self.details:
+            text += f": {self.details}"
+        return text
+
     def __init__(self, details: str = ""):
-        message = self.message
-        if details:
-            message += f": {details}"
-        self.message = message
-        super().__init__(message)
+        self.details = details
+        super().__init__(self.message)
 
 
 class ProviderError(Error):
@@ -25,17 +29,32 @@ class GrafanaError(ProviderError):
     code = "ERR_GRAFANA"
 
 
+class FileError(ProviderError):
+    message = "File error"
+    code = "ERR_FILE"
+
+
+class FileNotFound(FileError):
+    message = "File not found"
+    code = "ERR_FILE_NOT_FOUND"
+
+
+class FileAccessDenied(FileError):
+    message = "Access denied to file"
+    code = "ERR_FILE_ACCESS_DENIED"
+
+
 class ConsulError(ProviderError):
     message = "Consul error"
     code = "ERR_CONSUL"
 
 
-class ConsulKeyNotFoundError(ConsulError):
+class ConsulKeyNotFound(ConsulError):
     message = "Consul key not found"
     code = "ERR_CONSUL_KEY_NOT_FOUND"
 
 
-class S3Error(Error):
+class S3Error(ProviderError):
     message = "S3 error"
     code = "ERR_S3"
 
@@ -80,6 +99,26 @@ class ConfigError(Error):
     code = "ERR_CONFIG"
 
 
+class ConfigFileNotFound(ConfigError):
+    message = "Configuration file not found"
+    code = "ERR_CONFIG_FILE_NOT_FOUND"
+
+
+class ConfigFormatInvalid(ConfigError):
+    message = "Invalid configuration format"
+    code = "ERR_CONFIG_FORMAT_INVALID"
+
+
 class EvaluationKindNotFound(ConfigError):
     message = "Invalid kind of evaluation"
     code = "ERR_CONFIG_EVALUATION_KIND_INVALID"
+
+
+class StateError(Error):
+    message = "State error"
+    code = "ERR_STATE"
+
+
+class StateFormatInvalid(StateError):
+    message = "Invalid state format"
+    code = "ERR_STATE_FORMAT_INVALID"

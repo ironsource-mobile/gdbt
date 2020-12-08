@@ -36,7 +36,7 @@ class ConsulProvider(StateProvider):
             content = document["Value"].decode("utf-8")
             return content
         except (KeyError, TypeError, consul.ConsulException):
-            raise gdbt.errors.ConsulKeyNotFoundError(self.path)
+            raise gdbt.errors.ConsulKeyNotFound(self.path)
         except consul.ConsulException as exc:
             raise gdbt.errors.ConsulError(str(exc))
 
