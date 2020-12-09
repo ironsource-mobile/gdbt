@@ -6,7 +6,6 @@ import deserialize  # type: ignore
 
 import gdbt.errors
 from gdbt.resource.resource import Resource
-from gdbt.state.state import State
 
 
 @deserialize.downcast_field("kind")
@@ -32,7 +31,7 @@ class StateProvider(Provider):
     def _write(self, content: str) -> None:
         pass
 
-    def get(self) -> State:
+    def get(self) -> typing.Dict[str, Resource]:
         try:
             resources_dict = json.loads(self._read())
             resources = {
@@ -41,15 +40,15 @@ class StateProvider(Provider):
             }
         except (json.JSONDecodeError, deserialize.DeserializeException) as exc:
             raise gdbt.errors.StateFormatInvalid(str(exc))
-        return State(resources)
+        return resources
 
     def put(
         self,
-        state: State,
+        resources: typing.Dict[str, Resource],
         providers: typing.Dict[str, Provider],
     ) -> None:
         resources_dict = {
             name: resource.serialize(providers)
-            for name, resource in state.resources.items()
+            for name, resource in resources.items()
         }
         self._write(json.dumps(resources_dict, indent=2, sort_keys=True))

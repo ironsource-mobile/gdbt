@@ -19,19 +19,18 @@ class State:
         }
         return serialized
 
+    @classmethod
+    def load(cls, source: str, providers: typing.Dict[str, typing.Any]) -> "State":
+        try:
+            provider = providers[source]
+        except KeyError:
+            raise gdbt.errors.ProviderNotFound(source)
+        resources = provider.get()
+        return cls(resources)
 
-def load(source: str, providers: typing.Dict[str, typing.Any]) -> State:
-    try:
-        provider = providers[source]
-    except KeyError:
-        raise gdbt.errors.ProviderNotFound(source)
-    state = provider.get()
-    return state
-
-
-def push(source: str, providers: typing.Dict[str, typing.Any], state: State) -> None:
-    try:
-        provider = providers[source]
-    except KeyError:
-        raise gdbt.errors.ProviderNotFound(source)
-    provider.put(state, providers)
+    def push(self, source: str, providers: typing.Dict[str, typing.Any]) -> None:
+        try:
+            provider = providers[source]
+        except KeyError:
+            raise gdbt.errors.ProviderNotFound(source)
+        provider.put(self.resources, providers)

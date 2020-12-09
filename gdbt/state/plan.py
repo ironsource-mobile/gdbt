@@ -14,13 +14,14 @@ import gdbt.state.state
 class Plan:
     diff: gdbt.state.diff.StateDiff = attr.ib()
 
-    def apply(self, providers: typing.Dict[str, typing.Any]) -> gdbt.state.state.State:
+    def apply(self, source: str, providers: typing.Dict[str, typing.Any]) -> None:
         resources = self.diff.current.resources
         outcomes = self.diff.outcomes(providers)
         for key in sorted(outcomes.keys(), reverse=True):
             with halo.Halo(text="Applying changes", spinner="dots") as spinner:
                 if outcomes[key].action == "create":
-                    spinner.text = f"Creating resource {key}"
+                    kind, name = key.split("_", 1)
+                    spinner.text = f"Creating {kind} {name}"
                     resource = self.diff.desired.serialize(providers)[key]
                     resource_cls = type(
                         deserialize.deserialize(
@@ -32,18 +33,25 @@ class Plan:
                         providers=providers, **resource
                     )
                     resources.update({key: resource_created})
-                    spinner.succeed(f"Created resource {key}")
+                    spinner.text = "Updating state"
+                    gdbt.state.state.State(resources).push(source, providers)
+                    spinner.succeed(f"Created {kind} {name}")
                 elif outcomes[key].action == "delete":
-                    spinner.text = f"Deleting resource {key}"
+                    kind, name = key.split("_", 1)
+                    spinner.text = f"Deleting {kind} {name}"
                     resource = self.diff.current.resources[key]
                     resource.delete(providers)
                     resources.pop(key, None)
-                    spinner.succeed(f"Deleted resource {key}")
+                    spinner.text = "Updating state"
+                    gdbt.state.state.State(resources).push(source, providers)
+                    spinner.succeed(f"Deleted {kind} {name}")
                 else:
-                    spinner.text = f"Updating resource {key}"
+                    kind, name = key.split("_", 1)
+                    spinner.text = f"Updating {kind} {name}"
                     resource = self.diff.current.resources[key]
                     resource_new = self.diff.desired.resources[key]
                     resource.update(resource_new.model, providers)
                     resources.update({key: resource_new})
-                    spinner.succeed(f"Updated resource {key}")
-        return gdbt.state.state.State(resources)
+                    spinner.text = "Updating state"
+                    gdbt.state.state.State(resources).push(source, providers)
+                    spinner.succeed(f"Updated {kind} {name}")

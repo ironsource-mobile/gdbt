@@ -61,12 +61,9 @@ def plan(config_dir: str) -> None:
             state_desired = gdbt.state.state.State(resources)
 
             spinner.text = "Loading state"
-            state_current = gdbt.state.state.load(
+            state_current = gdbt.state.state.State.load(
                 config.state,
-                typing.cast(
-                    typing.Dict[str, gdbt.provider.provider.StateProvider],
-                    config.providers,
-                ),
+                config.providers,
             )
 
             spinner.text = "Calculating diff"
@@ -74,7 +71,7 @@ def plan(config_dir: str) -> None:
 
         changes = len(state_diff.outcomes(config.providers).values())
         if changes == 0:
-            console.print("\n[b]Dashboards are up to date![/]\n")
+            console.print("\n[bold green]Dashboards are up to date![/]\n")
             return
 
         console.print("\n[b]Planned changes:[/b]\n")
@@ -124,12 +121,9 @@ def apply(config_dir: str, auto_approve: bool) -> None:
             state_desired = gdbt.state.state.State(resources)
 
             spinner.text = "Loading state"
-            state_current = gdbt.state.state.load(
+            state_current = gdbt.state.state.State.load(
                 config.state,
-                typing.cast(
-                    typing.Dict[str, gdbt.provider.provider.StateProvider],
-                    config.providers,
-                ),
+                config.providers,
             )
 
             spinner.text = "Calculating diff"
@@ -137,7 +131,7 @@ def apply(config_dir: str, auto_approve: bool) -> None:
 
         changes = len(state_diff.outcomes(config.providers).values())
         if changes == 0:
-            console.print("\n[b]Dashboards are up to date![/]\n")
+            console.print("\n[bold green]Dashboards are up to date![/]\n")
             return
 
         console.print("\n[b]Pending changes:[/b]\n")
@@ -150,22 +144,12 @@ def apply(config_dir: str, auto_approve: bool) -> None:
 
         t_start = time.time()
         plan = gdbt.state.plan.Plan(state_diff)
-        state_applied = plan.apply(config.providers)
+        plan.apply(config.state, config.providers)
         t_end = time.time()
         duration = t_end - t_start
 
-        with halo.Halo(text="Uploading state", spinner="dots") as spinner:
-            gdbt.state.state.push(
-                config.state,
-                typing.cast(
-                    typing.Dict[str, gdbt.provider.provider.StateProvider],
-                    config.providers,
-                ),
-                state_applied,
-            )
-            spinner.succeed("Uploaded state")
         console.print(
-            f"\n[bold green]Done! Modified {changes} resources in {duration:.2f} seconds."
+            f"\n[bold green]Done! Modified {changes} resources in {duration:.2f} seconds.\n"
         )
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
