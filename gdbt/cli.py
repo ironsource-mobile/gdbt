@@ -38,7 +38,15 @@ def version() -> None:
     default=".",
     help="Configuration directory",
 )
-def plan(config_dir: str) -> None:
+@click.option(
+    "-d",
+    "--debug",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+    help="Debug mode",
+)
+def plan(config_dir: str, debug: bool) -> None:
     """Plan the changes"""
     try:
         with halo.Halo(text="Loading", spinner="dots") as spinner:
@@ -80,6 +88,8 @@ def plan(config_dir: str) -> None:
         console.print("\nRun [bold green]gdbt apply[/] to apply these changes\n")
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
+        if debug:
+            console.print_exception()
         raise SystemExit(1)
 
 
@@ -99,7 +109,15 @@ def plan(config_dir: str) -> None:
     is_flag=True,
     help="Do not ask for confirmation",
 )
-def apply(config_dir: str, auto_approve: bool) -> None:
+@click.option(
+    "-d",
+    "--debug",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+    help="Debug mode",
+)
+def apply(config_dir: str, auto_approve: bool, debug: bool) -> None:
     """Apply the changes"""
     try:
         with halo.Halo(text="Loading", spinner="dots") as spinner:
@@ -137,7 +155,7 @@ def apply(config_dir: str, auto_approve: bool) -> None:
             return
 
         console.print("\n[b]Pending changes:[/b]\n")
-        console.print(state_diff.render(config.providers))
+        console.print(state_diff_rendered)
         console.print("\n")
 
         if not auto_approve:
@@ -155,6 +173,8 @@ def apply(config_dir: str, auto_approve: bool) -> None:
         )
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
+        if debug:
+            console.print_exception()
         raise SystemExit(1)
 
 
