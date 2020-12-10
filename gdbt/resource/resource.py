@@ -7,7 +7,15 @@ import grafana_api.grafana_api  # type: ignore
 
 import gdbt.errors
 
-IGNORED_KEYS = ["id", "uid", "version"]
+IGNORED_KEYS = ("id", "uid", "version")
+
+
+def model_strip_fields(
+    model: typing.Dict[str, typing.Any]
+) -> typing.Dict[str, typing.Any]:
+    for field in ("id", "uid", "version"):
+        model.pop(field, None)
+    return model
 
 
 @deserialize.downcast_field("kind")
@@ -65,6 +73,18 @@ class Resource(abc.ABC):
             raise gdbt.errors.ProviderNotFound(grafana)
         return provider
 
+    @classmethod
+    def _model_strip(
+        cls, model: typing.Dict[str, typing.Any]
+    ) -> typing.Dict[str, typing.Any]:
+        model_stripped = model.copy()
+        for field in IGNORED_KEYS:
+            try:
+                del model_stripped[field]
+            except KeyError:
+                pass
+        return model_stripped
+
 
 @deserialize.downcast_identifier(Resource, "folder")
 class Folder(Resource):
@@ -77,7 +97,8 @@ class Folder(Resource):
         providers: typing.Dict[str, typing.Any],
     ) -> "Folder":
         try:
-            title = model["title"]
+            model_stripped = cls._model_strip(model)
+            title = model_stripped["title"]
             cls.client(grafana, providers).client.folder.create_folder(title, uid)
         except KeyError:
             raise gdbt.errors.DataError("Folder model missing 'title' key")
@@ -101,7 +122,8 @@ class Folder(Resource):
         except grafana_api.grafana_api.GrafanaException as exc:
             raise gdbt.errors.GrafanaError(exc.message)
         model = {"title": title}
-        folder = cls(grafana, uid, model)
+        model_stripped = cls._model_strip(model)
+        folder = cls(grafana, uid, model_stripped)
         return folder
 
     @classmethod
@@ -134,8 +156,9 @@ class Folder(Resource):
         except grafana_api.grafana_api.GrafanaException as exc:
             raise gdbt.errors.GrafanaError(exc.message)
         model = {"title": data["title"]}
+        model_stripped = cls._model_strip(model)
         uid = data["uid"]
-        folder = cls(grafana, uid, model)
+        folder = cls(grafana, uid, model_stripped)
         return folder
 
     def id(self, providers: typing.Dict[str, typing.Any]) -> int:
@@ -153,8 +176,9 @@ class Folder(Resource):
         providers: typing.Dict[str, typing.Any],
     ) -> None:
         try:
-            title = model["title"]
-            model = self.client(self.grafana, providers).client.folder.update_folder(
+            model_stripped = self._model_strip(model)
+            title = model_stripped["title"]
+            self.client(self.grafana, providers).client.folder.update_folder(
                 self.uid, title, overwrite=True
             )
         except KeyError:
@@ -176,11 +200,12 @@ class Folder(Resource):
     def serialize(
         self, providers: typing.Dict[str, typing.Any]
     ) -> typing.Dict[str, typing.Any]:
+        model_stripped = self._model_strip(self.model)
         representation = {
             "kind": "folder",
             "grafana": self.grafana,
             "uid": self.uid,
-            "model": self.model,
+            "model": model_stripped,
         }
         return representation
 
@@ -199,18 +224,17 @@ class Dashboard(Resource):
         folder: str,
         providers: typing.Dict[str, typing.Any],
     ) -> "Dashboard":
-        model.update({"id": None, "uid": uid, "version": 1})
+        model_stripped = cls._model_strip(model)
+        model_stripped.update({"id": None, "uid": uid, "version": 1})
         meta = {
-            "dashboard": model,
+            "dashboard": model_stripped,
             "folderId": Folder.get(grafana, folder, providers).id(providers),
             "overwrite": True,
         }
         try:
-            model = cls.client(grafana, providers).client.dashboard.update_dashboard(
-                meta
-            )
+            cls.client(grafana, providers).client.dashboard.update_dashboard(meta)
         except grafana_api.grafana_api.GrafanaException as exc:
-            raise gdbt.errors.GrafanaError(exc.message)
+            raise gdbt.errors.GrafanaError(str(exc))
         return cls.get(grafana, uid, providers)
 
     @classmethod
@@ -225,12 +249,11 @@ class Dashboard(Resource):
                 uid
             )
         except grafana_api.grafana_api.GrafanaException as exc:
-            raise gdbt.errors.GrafanaError(exc.message)
+            raise gdbt.errors.GrafanaError(str(exc))
         model = dashboard["dashboard"]
+        model_stripped = cls._model_strip(model)
         folder = Folder.get_by_id(grafana, dashboard["meta"]["folderId"], providers).uid
-        for key in IGNORED_KEYS:
-            model.pop(key, None)
-        dashboard = cls(grafana, uid, model, folder)
+        dashboard = cls(grafana, uid, model_stripped, folder)
         return dashboard
 
     @classmethod
@@ -280,18 +303,17 @@ class Dashboard(Resource):
             version_new = self.version(providers) + 1
         except TypeError:
             version_new = 1
-        model.update(
+        model_stripped = self._model_strip(model)
+        model_stripped.update(
             {"id": self.id(providers), "uid": self.uid, "version": version_new}
         )
         meta = {
-            "dashboard": model,
+            "dashboard": model_stripped,
             "folderId": Folder.get(self.grafana, self.folder, providers).id(providers),
             "overwrite": True,
         }
         try:
-            model = self.client(
-                self.grafana, providers
-            ).client.dashboard.update_dashboard(meta)
+            self.client(self.grafana, providers).client.dashboard.update_dashboard(meta)
         except grafana_api.grafana_api.GrafanaException as exc:
             raise gdbt.errors.GrafanaError(exc.message)
 
@@ -311,11 +333,12 @@ class Dashboard(Resource):
     def serialize(
         self, providers: typing.Dict[str, typing.Any]
     ) -> typing.Dict[str, typing.Any]:
+        model_stripped = self._model_strip(self.model)
         representation = {
             "kind": "dashboard",
             "grafana": self.grafana,
             "uid": self.uid,
-            "model": self.model,
+            "model": model_stripped,
             "folder": self.folder,
         }
         return representation
