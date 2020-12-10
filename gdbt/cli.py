@@ -66,16 +66,17 @@ def plan(config_dir: str) -> None:
                 config.providers,
             )
 
-            spinner.text = "Calculating diff"
+            spinner.text = "Preparing the plan"
             state_diff = gdbt.state.diff.StateDiff(state_current, state_desired)
-
+            state_diff_rendered = state_diff.render(config.providers)
         changes = len(state_diff.outcomes(config.providers).values())
+
         if changes == 0:
             console.print("\n[bold green]Dashboards are up to date![/]\n")
             return
 
         console.print("\n[b]Planned changes:[/b]\n")
-        console.print(state_diff.render(config.providers))
+        console.print(state_diff_rendered)
         console.print("\nRun [bold green]gdbt apply[/] to apply these changes\n")
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
@@ -126,10 +127,11 @@ def apply(config_dir: str, auto_approve: bool) -> None:
                 config.providers,
             )
 
-            spinner.text = "Calculating diff"
+            spinner.text = "Preparing the plan"
             state_diff = gdbt.state.diff.StateDiff(state_current, state_desired)
+            state_diff_rendered = state_diff.render(config.providers)
+            changes = len(state_diff.outcomes(config.providers).values())
 
-        changes = len(state_diff.outcomes(config.providers).values())
         if changes == 0:
             console.print("\n[bold green]Dashboards are up to date![/]\n")
             return
