@@ -118,15 +118,18 @@ class StateDiff:
         self, providers: typing.Dict[str, gdbt.provider.provider.Provider]
     ) -> typing.Dict[str, Outcome]:
         outcomes = {}
-        for key, value in self.diff(providers).items():
+        for resource in self.diff(providers).keys():
             outcome: Outcome
-            if all([isinstance(v, Added) for v in value.values()]):
+            if (
+                resource in self.desired.resources
+                and resource not in self.current.resources
+            ):
                 outcome = Added("")
-            elif all([isinstance(v, Removed) for v in value.values()]):
+            elif resource not in self.desired.resources:
                 outcome = Removed("")
             else:
                 outcome = Changed("", "")
-            outcomes.update({key: outcome})
+            outcomes.update({resource: outcome})
         return outcomes
 
     def render(
@@ -138,7 +141,7 @@ class StateDiff:
             lines = []
             lines.append(self.outcomes(providers)[i].render_heading(i))
             for j in sorted(diff[i].keys()):
-                if j in ("kind", "folder", "grafana", "uid"):
+                if j == "kind":
                     continue
                 lines.append(diff[i][j].render(j, len(max(diff[i], key=len))))
             if len(lines) <= 1:
