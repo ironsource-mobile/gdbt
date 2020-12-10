@@ -48,7 +48,6 @@ class StateProvider(Provider):
         providers: typing.Dict[str, Provider],
     ) -> None:
         resources_dict = {
-            name: resource.serialize(providers)
-            for name, resource in resources.items()
+            name: resource.serialize(providers) for name, resource in resources.items()
         }
         self._write(json.dumps(resources_dict, indent=2, sort_keys=True))
