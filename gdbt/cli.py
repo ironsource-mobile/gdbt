@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import signal
 import time
 import typing
 
@@ -117,7 +118,7 @@ def plan(config_dir: str, debug: bool) -> None:
             spinner.text = "Preparing the plan"
             state_diff = gdbt.state.diff.StateDiff(state_current, state_desired)
             state_diff_rendered = state_diff.render(config.providers)
-        changes = len(state_diff.outcomes(config.providers).values())
+            changes = len(state_diff.outcomes(config.providers).values())
 
         if changes == 0:
             console.print("\n[bold green]Dashboards are up to date![/]\n")
@@ -201,6 +202,10 @@ def apply(config_dir: str, auto_approve: bool, debug: bool) -> None:
         if not auto_approve:
             click.confirm("Apply?", abort=True)
             console.print("\n")
+
+        # Disable interruptions
+        for s in (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM):
+            signal.signal(s, signal.SIG_IGN)
 
         t_start = time.time()
         plan = gdbt.state.plan.Plan(state_diff)
