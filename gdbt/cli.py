@@ -46,6 +46,46 @@ def version() -> None:
     is_flag=True,
     help="Debug mode",
 )
+def validate(config_dir: str, debug: bool) -> None:
+    """Validate the configuration"""
+    try:
+        with halo.Halo(text="Loading", spinner="dots") as spinner:
+            spinner.text = "Loading config"
+            config = gdbt.stencil.load.load_config(config_dir)
+            spinner.text = "Loading resources"
+            stencils = gdbt.stencil.load.load_resources(config_dir)
+            spinner.text = "Resolving resources"
+            for key, value in stencils.items():
+                value.resolve(
+                    key,
+                    config.providers,
+                    typing.cast(typing.Dict[str, typing.Any], config.evaluations),
+                    typing.cast(typing.Dict[str, typing.Any], config.lookups),
+                )
+        console.print("\n[bold green]Configuration is valid\n")
+    except gdbt.errors.Error as exc:
+        console.print(f"[red][b]ERROR[/b] {exc.text}")
+        if debug:
+            console.print_exception()
+        raise SystemExit(1)
+
+
+@click.command()
+@click.option(
+    "-c",
+    "--config-dir",
+    type=click.STRING,
+    default=".",
+    help="Configuration directory",
+)
+@click.option(
+    "-d",
+    "--debug",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+    help="Debug mode",
+)
 def plan(config_dir: str, debug: bool) -> None:
     """Plan the changes"""
     try:
@@ -179,6 +219,7 @@ def apply(config_dir: str, auto_approve: bool, debug: bool) -> None:
 
 
 main.add_command(version)
+main.add_command(validate)
 main.add_command(plan)
 main.add_command(apply)
 
