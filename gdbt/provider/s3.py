@@ -38,9 +38,13 @@ class S3Provider(StateProvider):
                 "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
                 "NoSuchKey": gdbt.errors.S3ObjectNotFound(path),
                 "AccessDenied": gdbt.errors.S3AccessDenied(self.bucket),
-                "default": gdbt.errors.S3Error(exc.response.get("message")),
             }
-            raise (errors.get(exc.response["Error"]["Code"], errors["default"]))
+            raise (
+                errors.get(
+                    exc.response["Error"]["Code"],
+                    gdbt.errors.S3Error(exc.response["Error"]["Message"]),
+                )
+            )
 
     def _write(self, content: str) -> None:
         path = str(pathlib.Path(self.path))
@@ -52,6 +56,10 @@ class S3Provider(StateProvider):
             errors = {
                 "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
                 "AccessDenied": gdbt.errors.S3AccessDenied(self.bucket),
-                "default": gdbt.errors.S3Error(exc.response.get("message")),
             }
-            raise (errors.get(exc.response["Error"]["Code"], errors["default"]))
+            raise (
+                errors.get(
+                    exc.response["Error"]["Code"],
+                    gdbt.errors.S3Error(exc.response["Error"]["Message"]),
+                )
+            )
