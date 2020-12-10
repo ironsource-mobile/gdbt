@@ -6,7 +6,7 @@ import deepdiff  # type: ignore
 import gdbt.provider.provider
 import gdbt.state.state
 
-ACTION_SYMBOLS = {"create": "+", "delete": "-", "update": "~"}
+ACTION_SYMBOLS = {"create": "+", "remove": "-", "update": "~"}
 
 
 @attr.s
@@ -26,8 +26,10 @@ class Outcome:
         return text
 
     def render_heading(self, heading: str) -> str:
+        kind, name = heading.split("_", 1)
         text = f"[{self.color}]{ACTION_SYMBOLS[self.action]}[/]"
-        text += f" [b]{heading}:[/]"
+        text += f" {kind.title()} [b]{name}[/]"
+        text += f" will be [{self.color}]{self.action}d[/]:"
         return text
 
     def truncate_value(self, value: typing.Any) -> typing.Any:
@@ -52,7 +54,7 @@ class Added(Outcome):
 
 class Removed(Outcome):
     color = "red"
-    action = "delete"
+    action = "remove"
 
 
 @attr.s
