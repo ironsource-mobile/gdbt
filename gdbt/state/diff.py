@@ -103,6 +103,8 @@ class StateDiff:
                     current.get(key, {}),
                     desired.get(key, {}),
                     verbose_level=2,
+                    ignore_order=True,
+                    report_repetition=True,
                 )
             )
             for key in self.keys(providers)
