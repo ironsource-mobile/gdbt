@@ -5,8 +5,8 @@ import typing
 
 import click
 import halo  # type: ignore
-import rich.console
-import rich.traceback
+import rich.console  # type: ignore
+import rich.traceback  # type: ignore
 
 import gdbt
 import gdbt.errors

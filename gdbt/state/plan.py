@@ -3,7 +3,7 @@ import typing
 import attr
 import deserialize  # type: ignore
 import halo  # type: ignore
-import rich.style
+import rich.style  # type: ignore
 
 import gdbt.errors
 import gdbt.resource.resource
