@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.1] - 2020-12-15
+
+### Fixed
+
+- Fixed `timeout` option in Prometheus provider being mandatory
+- Fixed mypy errors caused by `rich` module upgrade
+
 ## [1.4.0] - 2020-12-15
 
 ### Added
@@ -65,7 +72,8 @@ All notable changes to this project will be documented in this file.
 
 - Initial version
 
-[unreleased]: https://github.com/SupersonicAds/spotcli/compare/v1.4.0...HEAD
+[unreleased]: https://github.com/SupersonicAds/spotcli/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/SupersonicAds/spotcli/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/SupersonicAds/spotcli/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/SupersonicAds/spotcli/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/SupersonicAds/spotcli/compare/v1.2.0...v1.2.1
