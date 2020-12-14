@@ -22,7 +22,7 @@ def convert_duration(duration_raw: typing.Union[str, int, float]) -> float:
 @attr.s
 class PrometheusProvider(EvaluationProvider):
     endpoint: str = attr.ib()
-    timeout: float = attr.ib(default=HTTP_TIMEOUT, converter=convert_duration)
+    timeout: typing.Optional[float] = attr.ib(default=HTTP_TIMEOUT, converter=convert_duration)
 
     @property
     def client(self) -> None:
