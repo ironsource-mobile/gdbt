@@ -44,20 +44,20 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
 name = "boto3"
-version = "1.16.33"
+version = "1.16.36"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-botocore = ">=1.19.33,<1.20.0"
+botocore = ">=1.19.36,<1.20.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "botocore"
-version = "1.19.33"
+version = "1.19.36"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -451,7 +451,7 @@ socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 
 [[package]]
 name = "rich"
-version = "9.3.0"
+version = "9.4.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
@@ -568,12 +568,12 @@ black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 boto3 = [
-    {file = "boto3-1.16.33-py2.py3-none-any.whl", hash = "sha256:aaccf2aec5c2dc15c81b3105d00db930fe40fd84114a5cebc33f9948ec0258ee"},
-    {file = "boto3-1.16.33.tar.gz", hash = "sha256:0aba88dadc9ae5d103c6d8de7ac88df67b3b0198da82346993b0c52b7477a5dd"},
+    {file = "boto3-1.16.36-py2.py3-none-any.whl", hash = "sha256:4ef19b74babe3925255cc0718bbed228e9b147f05051c39b3081c8e7fa6f1044"},
+    {file = "boto3-1.16.36.tar.gz", hash = "sha256:a1e64250415afd441799df4f70ac401bcf1611a300f3221547121193e3b10479"},
 ]
 botocore = [
-    {file = "botocore-1.19.33-py2.py3-none-any.whl", hash = "sha256:0f5f316ae1b089da3efac85524345954fa54e6e682ed60579f8c95c0d5aee3c4"},
-    {file = "botocore-1.19.33.tar.gz", hash = "sha256:3c741da411e117a08545877790e01b94c804cfb85b1981e40378cb8594af5406"},
+    {file = "botocore-1.19.36-py2.py3-none-any.whl", hash = "sha256:9fba0246e29dbe0d4576a602aa5bc7a7caeaffb4e3c7f396f563dcdf04e26abf"},
+    {file = "botocore-1.19.36.tar.gz", hash = "sha256:a5ad68d2a2cd3781fa26dba36f355169c2a0ee103bcd544fdfc71d5709ecf0c1"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
@@ -798,8 +798,8 @@ requests = [
     {file = "requests-2.25.0.tar.gz", hash = "sha256:7f1a0b932f4a60a1a65caa4263921bb7d9ee911957e0ae4a23a6dd08185ad5f8"},
 ]
 rich = [
-    {file = "rich-9.3.0-py3-none-any.whl", hash = "sha256:13cdbb6b72798be9ef30caf460d3949bf057d9f073f73cc853908d50cc31229f"},
-    {file = "rich-9.3.0.tar.gz", hash = "sha256:ca1008c18e91c2d0345764ddb871cc284feadc467241fbb468f14280b791388a"},
+    {file = "rich-9.4.0-py3-none-any.whl", hash = "sha256:dfc1d6a394f97674163b2b2c24d12e15f85752ce5451043c4d3ce77dad16a07d"},
+    {file = "rich-9.4.0.tar.gz", hash = "sha256:bde23a1761373fed2802502ff98292c5d735a5389ed96f4fe1be5fb4c2cde8ea"},
 ]
 "ruamel.yaml" = [
     {file = "ruamel.yaml-0.16.12-py2.py3-none-any.whl", hash = "sha256:012b9470a0ea06e4e44e99e7920277edf6b46eee0232a04487ea73a7386340a5"},
