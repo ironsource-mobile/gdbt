@@ -13,14 +13,21 @@
   - [Using Poetry](#using-poetry)
   - [Build](#build)
   - [Releases](#releases)
+  - [CI/CD](#cicd)
 
 ## Installation
 
-To start using **GDBT**, you need to download a distribution first. These can be found on [release](https://github.com/SupersonicAds/gdbt/releases/latest) page.
+To install GDBT you can use this one-liner:
 
-*Note:* make sure you keep the whl file name as is, otherwise you won't be able to install it.
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/SupersonicAds/gdbt/main/install.sh)"
+```
 
-The distribution can be installed by running:
+If you prefer manual installation, start with downloading wheel file from the [release](https://github.com/SupersonicAds/gdbt/releases/latest) page.
+
+*Note:* make sure you keep the wheel file name as is, otherwise you won't be able to install it.
+
+The wheel can be installed by running:
 
 ```bash
 pip3 install ./gdbt-1.0.0-py3-none-any.whl
@@ -119,6 +126,17 @@ model: |
 ```
 
 *Note: `model` in the above example was stripped and only relevant fields were left. Please refer to Grafana documentation for valid resource model JSON format.
+
+Example `folder` resource:
+
+```yaml
+kind: folder
+provider: example-grafana
+model: |
+  {
+    "title": "Example Folder"
+  }
+```
 
 - `kind`: either of `folder`, `dashboard`
 - `provider`: name of Grafana provider this resource will be applied to
@@ -241,8 +259,8 @@ Generally, you should test your changes before creating a release. After that, c
 3. Add current date in ISO format (`YYYY-DD-MM`) after the header (e.g., `[1.2.3] - 2011-12-13`).
 4. Add new `[Unreleased]` H2 header above all version headers.
 5. Add compare link at the bottom of *CHANGELOG.md* as follows:
-`[1.2.3]: https://github.com/SupersonicAds/vmchecks/compare/v1.2.2...v1.2.3` right below `[unreleased]` link (replace `1.2.3` with the new release version, `1.2.2` with the previous release version).
-6. Change version in `[unreleased]` link at the bottom of *CHANGELOG.md* to the new release version (e.g., `[unreleased]: https://github.com/SupersonicAds/vmchecks/compare/v1.2.3...HEAD`).
+`[1.2.3]: https://github.com/SupersonicAds/gdbt/compare/v1.2.2...v1.2.3` right below `[unreleased]` link (replace `1.2.3` with the new release version, `1.2.2` with the previous release version).
+6. Change version in `[unreleased]` link at the bottom of *CHANGELOG.md* to the new release version (e.g., `[unreleased]: https://github.com/SupersonicAds/gdbt/compare/v1.2.3...HEAD`).
 7. Commit the changes to *main* branch. Commit message should be `Release v1.2.3`.
 8. Create a release tag: `git tag v1.2.3`. This should be a *lightweight* tag, not an annotated one.
 9. Push the changes and tag to GitHub: `git push && git push --tags`.
@@ -251,7 +269,7 @@ If you find the above instructions unclear, take a look at previous releases or 
 
 ### CI/CD
 
-This repo uses GitHub Actions as a CI/CD tool. Pipeline config can be found in *.github/workflows/release.yaml* file.
+This repo uses GitHub Actions as CI/CD tool. Pipeline config can be found in *.github/workflows/ci-release.yaml* file.
 
 As of now, the only pipeline is *Release*: it builds the wheel and creates a release in GitHub. It is triggered on tags that start with *v* prefix.
 
