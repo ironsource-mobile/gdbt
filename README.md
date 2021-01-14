@@ -152,6 +152,10 @@ model: |
 
 See [Jinja2 documentation](https://jinja.palletsprojects.com/en/2.11.x/templates/) for more info about templates.
 
+##### Caveats
+
+Grafana forbids creating resources with identical titles. Because of this, be extra careful when using `loop`, ensure that you include `{{ item }}` as a part of `title` — otherwise you will get unexpected cryptic errors from Grafana.
+
 ### CLI
 
 ```text
