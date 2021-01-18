@@ -6,7 +6,7 @@ import deserialize  # type: ignore
 import grafana_api.grafana_api  # type: ignore
 import grafana_api.grafana_face  # type: ignore
 
-from gdbt.provider.provider import Provider
+from gdbt.provider import Provider
 
 
 @deserialize.downcast_identifier(Provider, "grafana")

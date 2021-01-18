@@ -29,6 +29,16 @@ class GrafanaError(ProviderError):
     code = "ERR_GRAFANA"
 
 
+class GrafanaServerError(GrafanaError):
+    message = "Grafana server error"
+    code = "ERR_GRAFANA_SERVER_ERROR"
+
+
+class GrafanaResourceNotFound(GrafanaError):
+    message = "Grafana resource not found"
+    code = "ERR_GRAFANA_RESOURCE_NOT_FOUND"
+
+
 class FileError(ProviderError):
     message = "File error"
     code = "ERR_FILE"
@@ -104,6 +114,11 @@ class ConfigFileNotFound(ConfigError):
     code = "ERR_CONFIG_FILE_NOT_FOUND"
 
 
+class ConfigEmpty(ConfigError):
+    message = "Configuration is empty"
+    code = "ERR_CONFIG_EMPTY"
+
+
 class ConfigFormatInvalid(ConfigError):
     message = "Invalid configuration format"
     code = "ERR_CONFIG_FORMAT_INVALID"
@@ -119,6 +134,26 @@ class StateError(Error):
     code = "ERR_STATE"
 
 
-class StateFormatInvalid(StateError):
-    message = "Invalid state format"
-    code = "ERR_STATE_FORMAT_INVALID"
+class StateVersionIncompatible(StateError):
+    message = "Incompatible state version"
+    code = "ERR_STATE_VERSION_INCOMPATIBLE"
+
+
+class StateCorrupted(StateError):
+    message = "Invalid state format, it might be corrupted"
+    code = "ERR_STATE_CORRUPTED"
+
+
+class StateLockError(StateError):
+    message = "State lock error"
+    code = "ERR_STATE_LOCK"
+
+
+class StateAlreadyLocked(StateError):
+    message = "State already locked, is someone else modifying the same resource?"
+    code = "ERR_STATE_ALREADY_LOCKED"
+
+
+class StateUnlockError(StateError):
+    message = "Unable to unlock state"
+    code = "ERR_STATE_UNLOCK_FAIL"

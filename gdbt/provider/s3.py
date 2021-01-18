@@ -2,41 +2,60 @@ import pathlib
 import typing
 
 import attr
-import boto3  # type: ignore
-import boto3.resources.base  # type: ignore
 import botocore.exceptions  # type: ignore
 import deserialize  # type: ignore
+import s3path  # type: ignore
 
 import gdbt.errors
-from gdbt.provider.provider import Provider, StateProvider
+from gdbt.provider import Provider, StateProvider
+
+STATE_OBJECT_EXTENSION = ".json"
 
 
 @deserialize.downcast_identifier(Provider, "s3")
+@deserialize.default("_object_extension", STATE_OBJECT_EXTENSION)
 @attr.s
 class S3Provider(StateProvider):
     bucket: str = attr.ib()
-    path: str = attr.ib()
-    access_key_id: typing.Optional[str] = attr.ib()
-    secret_access_key: typing.Optional[str] = attr.ib()
+    _object_extension = STATE_OBJECT_EXTENSION
 
-    def client(self) -> boto3.resources.base.ServiceResource:
-        return boto3.resource(
-            "s3",
-            aws_access_key_id=self.access_key_id,
-            aws_secret_access_key=self.secret_access_key,
-        )
+    def client(self):
+        pass
 
-    def _read(self) -> str:
-        path = str(pathlib.Path(self.path))
-        s3 = self.client()
+    @property
+    def _base_path(self) -> s3path.S3Path:
+        s3_path = s3path.S3Path("/" + self.bucket.strip("/"))
+        base_path = s3_path / (self.path or ".")
+        return base_path
+
+    def _list(self, path: pathlib.Path) -> typing.Generator[pathlib.Path, None, None]:
         try:
-            object = s3.Object(self.bucket, path)
-            content = object.get()["Body"].read().decode("utf-8")
+            base_path = typing.cast(pathlib.Path, self._base_path)
+            for object in (base_path / path).glob(f"**/*{self._object_extension}"):
+                if object.is_file():
+                    yield object.relative_to(base_path).with_suffix("")
+        except botocore.exceptions.ClientError as exc:
+            errors = {
+                "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
+                "AccessDenied": gdbt.errors.S3AccessDenied(self.bucket),
+            }
+            raise (
+                errors.get(
+                    exc.response["Error"]["Code"],
+                    gdbt.errors.S3Error(exc.response["Error"]["Message"]),
+                )
+            )
+
+    def _get(self, path: pathlib.Path) -> str:
+        try:
+            base_path = typing.cast(pathlib.Path, self._base_path)
+            object = base_path / path
+            content = object.read_text()
             return content
         except botocore.exceptions.ClientError as exc:
             errors = {
                 "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
-                "NoSuchKey": gdbt.errors.S3ObjectNotFound(path),
+                "NoSuchKey": gdbt.errors.S3ObjectNotFound(str(path)),
                 "AccessDenied": gdbt.errors.S3AccessDenied(self.bucket),
             }
             raise (
@@ -46,12 +65,11 @@ class S3Provider(StateProvider):
                 )
             )
 
-    def _write(self, content: str) -> None:
-        path = str(pathlib.Path(self.path))
-        s3 = self.client()
+    def _put(self, path: pathlib.Path, content: str) -> None:
         try:
-            object = s3.Object(self.bucket, path)
-            object.put(Body=content.encode("utf-8"))
+            base_path = typing.cast(pathlib.Path, self._base_path)
+            object = base_path / path
+            object.write_text(content)
         except botocore.exceptions.ClientError as exc:
             errors = {
                 "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
@@ -63,3 +81,26 @@ class S3Provider(StateProvider):
                     gdbt.errors.S3Error(exc.response["Error"]["Message"]),
                 )
             )
+
+    def _remove(self, path: pathlib.Path):
+        try:
+            base_path = typing.cast(pathlib.Path, self._base_path)
+            object = base_path / path
+            object.unlink(missing_ok=True)
+        except botocore.exceptions.ClientError as exc:
+            errors = {
+                "NoSuchBucket": gdbt.errors.S3BucketNotFound(self.bucket),
+                "AccessDenied": gdbt.errors.S3AccessDenied(self.bucket),
+            }
+            raise (
+                errors.get(
+                    exc.response["Error"]["Code"],
+                    gdbt.errors.S3Error(exc.response["Error"]["Message"]),
+                )
+            )
+
+    def _lock(self, path: pathlib.Path) -> None:
+        pass
+
+    def _unlock(self, path: pathlib.Path) -> None:
+        pass

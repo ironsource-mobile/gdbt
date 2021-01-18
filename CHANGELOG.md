@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.0] - 2021-01-18
+
+### Added
+
+- Added `destroy` mode — destroys all defined resources
+- Added retry and back-off mechanisms to Grafana client
+- Added evaluation locking and lock update mode
+- Added ability to run from subdirectories, targeting only specific directories
+- Added environment variable templating to main configuration file
+- Added some new exceptions
+
+### Changed
+
+- Main configuration file is now in TOML format
+- Changed template delimiters from `{{ }}` to `{$ $}` to avoid clashing with Grafana templates
+- State is now stored in split files and mirrors configuration file structure
+- Moved loop item from `item` to `loop.item` variable
+- Re-written diff engine
+- Re-written CLI interface
+- Switched from `boto3` to `s3path` as S3 client
+
+### Removed
+
+- Removed "debug" mode since it was useless
+- Removed `file` and `consul` state providers (temporarily)
+
 ## [1.4.1] - 2020-12-15
 
 ### Fixed
@@ -72,7 +98,8 @@ All notable changes to this project will be documented in this file.
 
 - Initial version
 
-[unreleased]: https://github.com/SupersonicAds/spotcli/compare/v1.4.1...HEAD
+[unreleased]: https://github.com/SupersonicAds/spotcli/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/SupersonicAds/spotcli/compare/v1.4.1...v2.0.0
 [1.4.1]: https://github.com/SupersonicAds/spotcli/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/SupersonicAds/spotcli/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/SupersonicAds/spotcli/compare/v1.2.1...v1.3.0

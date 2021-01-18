@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+import pathlib
 import signal
 import time
 import typing
@@ -6,15 +8,15 @@ import typing
 import click
 import halo  # type: ignore
 import rich.console  # type: ignore
+import rich.style  # type: ignore
 import rich.traceback  # type: ignore
 
 import gdbt
+import gdbt.code.configuration
+import gdbt.code.templates
 import gdbt.errors
-import gdbt.provider.provider
-import gdbt.state.diff
-import gdbt.state.plan
-import gdbt.state.state
-import gdbt.stencil.load
+import gdbt.resource
+import gdbt.state
 
 console = rich.console.Console(highlight=False)
 rich.traceback.install()
@@ -29,115 +31,130 @@ def main():
 def version() -> None:
     """Get GDBT version"""
     console.print(f"GDBT version {gdbt.__version__}")
+    console.print(f"Supported state version: {gdbt.state.state.STATE_VERSION}")
 
 
 @click.command()
 @click.option(
-    "-c",
-    "--config-dir",
+    "-d",
+    "--dir",
     type=click.STRING,
     default=".",
     help="Configuration directory",
 )
 @click.option(
-    "-d",
-    "--debug",
+    "-u",
+    "--update",
     type=click.BOOL,
-    default=False,
     is_flag=True,
-    help="Debug mode",
+    default=False,
+    help="Update evaluation lock",
 )
-def validate(config_dir: str, debug: bool) -> None:
+def validate(dir: str, update: bool) -> None:
     """Validate the configuration"""
     try:
+        console.out("")
         with halo.Halo(text="Loading", spinner="dots") as spinner:
-            spinner.text = "Loading config"
-            config = gdbt.stencil.load.load_config(config_dir)
-            spinner.text = "Loading resources"
-            stencils = gdbt.stencil.load.load_resources(config_dir)
+            spinner.text = "Evaluating paths"
+            path_current = pathlib.Path(dir).expanduser().resolve()
+
+            spinner.text = "Loading configuration"
+            configuration = gdbt.code.configuration.load(path_current)
+            templates = gdbt.code.templates.load(path_current)
+
             spinner.text = "Resolving resources"
-            for key, value in stencils.items():
-                value.resolve(
-                    key,
-                    config.providers,
-                    typing.cast(typing.Dict[str, typing.Any], config.evaluations),
-                    typing.cast(typing.Dict[str, typing.Any], config.lookups),
+            for name, template in templates.items():
+                template.resolve(name, configuration, update)
+
+            spinner.succeed(
+                rich.style.Style(color="green", bold=True).render(
+                    "Configuration is valid!\n"
                 )
-        console.print("\n[bold green]Configuration is valid\n")
+            )
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
-        if debug:
-            console.print_exception()
         raise SystemExit(1)
 
 
 @click.command()
 @click.option(
-    "-c",
-    "--config-dir",
+    "-d",
+    "--dir",
     type=click.STRING,
     default=".",
     help="Configuration directory",
 )
 @click.option(
-    "-d",
-    "--debug",
+    "-u",
+    "--update",
     type=click.BOOL,
-    default=False,
     is_flag=True,
-    help="Debug mode",
+    default=False,
+    help="Update evaluation lock",
 )
-def plan(config_dir: str, debug: bool) -> None:
+def plan(dir: str, update: bool) -> None:
     """Plan the changes"""
     try:
+        console.out("")
         with halo.Halo(text="Loading", spinner="dots") as spinner:
-            spinner.text = "Loading config"
-            config = gdbt.stencil.load.load_config(config_dir)
+            spinner.text = "Evaluating paths"
+            path_current = pathlib.Path(dir).expanduser().resolve()
+            path_base = gdbt.code.templates.TemplateLoader(path_current).base_path
+            path_relative = path_current.relative_to(path_base)
 
-            spinner.text = "Loading resources"
-            stencils = gdbt.stencil.load.load_resources(config_dir)
+            spinner.text = "Loading configuration"
+            configuration = gdbt.code.configuration.load(path_current)
+            templates = gdbt.code.templates.load(path_current)
 
             spinner.text = "Resolving resources"
-            resources = {}
-            for key, value in stencils.items():
-                stencil_resources = value.resolve(
-                    key,
-                    config.providers,
-                    typing.cast(typing.Dict[str, typing.Any], config.evaluations),
-                    typing.cast(typing.Dict[str, typing.Any], config.lookups),
+            resources_desired = {
+                name: typing.cast(
+                    gdbt.resource.ResourceGroup,
+                    template.resolve(name, configuration, update),
                 )
-                resources.update(stencil_resources)
-            state_desired = gdbt.state.state.State(resources)
+                for name, template in templates.items()
+            }
 
-            spinner.text = "Loading state"
-            state_current = gdbt.state.state.State.load(
-                config.state,
-                config.providers,
+            spinner.text = "Loading resource state"
+            states = gdbt.state.StateLoader(configuration).load(path_relative)
+            resources_current_meta = {
+                name: state.resource_meta for name, state in states.items()
+            }
+
+            spinner.text = "Refreshing resource state"
+            resources_current = gdbt.resource.ResourceLoader(configuration).load(
+                resources_current_meta
             )
 
-            spinner.text = "Preparing the plan"
-            state_diff = gdbt.state.diff.StateDiff(state_current, state_desired)
-            state_diff_rendered = state_diff.render(config.providers)
-            changes = len(state_diff.outcomes(config.providers).values())
+            spinner.text = "Calculating plan"
+            plan = gdbt.state.Plan.plan(resources_current, resources_desired)
+            summary = gdbt.state.Plan.summary(
+                resources_current, resources_desired, plan
+            )
+            spinner.text = "Rendering plan"
+            plan_rendered, changes_pending = gdbt.state.PlanRenderer(plan).render(
+                summary
+            )
 
-        if changes == 0:
-            console.print("\n[bold green]Dashboards are up to date![/]\n")
-            return
+            if not changes_pending:
+                spinner.succeed(
+                    rich.style.Style(color="green", bold=True).render(
+                        "Dashboards are up to date!\n"
+                    )
+                )
+                return
 
-        console.print("\n[b]Planned changes:[/b]\n")
-        console.print(state_diff_rendered)
-        console.print("\nRun [bold green]gdbt apply[/] to apply these changes\n")
+        console.out(plan_rendered)
+        os._exit(0)
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
-        if debug:
-            console.print_exception()
         raise SystemExit(1)
 
 
 @click.command()
 @click.option(
-    "-c",
-    "--config-dir",
+    "-d",
+    "--dir",
     type=click.STRING,
     default=".",
     help="Configuration directory",
@@ -148,78 +165,189 @@ def plan(config_dir: str, debug: bool) -> None:
     type=click.BOOL,
     default=False,
     is_flag=True,
-    help="Do not ask for confirmation",
+    help="Apply without confirmation",
 )
 @click.option(
-    "-d",
-    "--debug",
+    "-u",
+    "--update",
     type=click.BOOL,
-    default=False,
     is_flag=True,
-    help="Debug mode",
+    default=False,
+    help="Update evaluation lock",
 )
-def apply(config_dir: str, auto_approve: bool, debug: bool) -> None:
+def apply(dir: str, auto_approve: bool, update: bool) -> None:
     """Apply the changes"""
     try:
+        console.out("")
         with halo.Halo(text="Loading", spinner="dots") as spinner:
-            spinner.text = "Loading config"
-            config = gdbt.stencil.load.load_config(config_dir)
+            spinner.text = "Evaluating paths"
+            path_current = pathlib.Path(dir).expanduser().resolve()
+            path_base = gdbt.code.templates.TemplateLoader(path_current).base_path
+            path_relative = path_current.relative_to(path_base)
 
-            spinner.text = "Loading resources"
-            stencils = gdbt.stencil.load.load_resources(config_dir)
+            spinner.text = "Loading configuration"
+            configuration = gdbt.code.configuration.load(path_current)
+            templates = gdbt.code.templates.load(path_current)
 
             spinner.text = "Resolving resources"
-            resources = {}
-            for key, value in stencils.items():
-                stencil_resources = value.resolve(
-                    key,
-                    config.providers,
-                    typing.cast(typing.Dict[str, typing.Any], config.evaluations),
-                    typing.cast(typing.Dict[str, typing.Any], config.lookups),
+            resources_desired = {
+                name: typing.cast(
+                    gdbt.resource.ResourceGroup,
+                    template.resolve(name, configuration, update),
                 )
-                resources.update(stencil_resources)
-            state_desired = gdbt.state.state.State(resources)
+                for name, template in templates.items()
+            }
 
-            spinner.text = "Loading state"
-            state_current = gdbt.state.state.State.load(
-                config.state,
-                config.providers,
+            spinner.text = "Loading resource state"
+            states = gdbt.state.StateLoader(configuration).load(path_relative)
+            resources_current_meta = {
+                name: state.resource_meta for name, state in states.items()
+            }
+
+            spinner.text = "Refreshing resource state"
+            resources_current = gdbt.resource.ResourceLoader(configuration).load(
+                resources_current_meta
             )
 
-            spinner.text = "Preparing the plan"
-            state_diff = gdbt.state.diff.StateDiff(state_current, state_desired)
-            state_diff_rendered = state_diff.render(config.providers)
-            changes = len(state_diff.outcomes(config.providers).values())
+            spinner.text = "Calculating plan"
+            plan = gdbt.state.Plan.plan(resources_current, resources_desired)
+            summary = gdbt.state.Plan.summary(
+                resources_current, resources_desired, plan
+            )
+            spinner.text = "Rendering plan"
+            plan_rendered, changes_pending = gdbt.state.PlanRenderer(plan).render(
+                summary
+            )
 
-        if changes == 0:
-            console.print("\n[bold green]Dashboards are up to date![/]\n")
-            return
+            if not changes_pending:
+                spinner.succeed(
+                    rich.style.Style(color="green", bold=True).render(
+                        "Dashboards are up to date!\n"
+                    )
+                )
+                return
 
-        console.print("\n[b]Pending changes:[/b]\n")
-        console.print(state_diff_rendered)
-        console.print("\n")
+        console.out(plan_rendered)
 
         if not auto_approve:
             click.confirm("Apply?", abort=True)
             console.print("\n")
 
-        # Disable interruptions
         for s in (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM):
             signal.signal(s, signal.SIG_IGN)
 
-        t_start = time.time()
-        plan = gdbt.state.plan.Plan(state_diff)
-        plan.apply(config.state, config.providers)
-        t_end = time.time()
-        duration = t_end - t_start
+        with halo.Halo(text="Loading", spinner="dots") as spinner:
+            spinner.text = "Applying changes"
+            t_start = time.time()
+            gdbt.state.PlanRunner(summary).apply(
+                configuration, resources_current, resources_desired
+            )
 
-        console.print(
-            f"\n[bold green]Done! Modified {changes} resources in {duration:.2f} seconds.\n"
-        )
+            spinner.text = "Uploading resource state"
+            gdbt.state.StateLoader(configuration).upload(
+                path_relative, resources_desired
+            )
+            t_end = time.time()
+            duration = t_end - t_start
+            spinner.succeed(
+                rich.style.Style(color="green", bold=True).render(
+                    f"Done! Apply took {duration:.2f} seconds.\n"
+                )
+            )
+        os._exit(0)
     except gdbt.errors.Error as exc:
         console.print(f"[red][b]ERROR[/b] {exc.text}")
-        if debug:
-            console.print_exception()
+        raise SystemExit(1)
+
+
+@click.command()
+@click.option(
+    "-d",
+    "--dir",
+    type=click.STRING,
+    default=".",
+    help="Configuration directory",
+)
+@click.option(
+    "-y",
+    "--auto-approve",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+    help="Apply without confirmation",
+)
+def destroy(dir: str, auto_approve: bool) -> None:
+    """Destroy resources"""
+    try:
+        console.out("")
+        with halo.Halo(text="Loading", spinner="dots") as spinner:
+            spinner.text = "Evaluating paths"
+            path_current = pathlib.Path(dir).expanduser().resolve()
+            path_base = gdbt.code.templates.TemplateLoader(path_current).base_path
+            path_relative = path_current.relative_to(path_base)
+
+            spinner.text = "Loading configuration"
+            configuration = gdbt.code.configuration.load(path_current)
+
+            spinner.text = "Loading resource state"
+            states = gdbt.state.StateLoader(configuration).load(path_relative)
+            resources_current_meta = {
+                name: state.resource_meta for name, state in states.items()
+            }
+
+            spinner.text = "Refreshing resource state"
+            resources_current = gdbt.resource.ResourceLoader(configuration).load(
+                resources_current_meta
+            )
+
+            spinner.text = "Calculating plan"
+            plan = gdbt.state.Plan.plan(resources_current, {})
+            summary = gdbt.state.Plan.summary(resources_current, {}, plan)
+            spinner.text = "Rendering plan"
+            plan_rendered, changes_pending = gdbt.state.PlanRenderer(plan).render(
+                summary
+            )
+
+            if not changes_pending:
+                spinner.succeed(
+                    rich.style.Style(color="green", bold=True).render(
+                        "Dashboards are up to date!\n"
+                    )
+                )
+                return
+
+        console.out(plan_rendered)
+
+        if not auto_approve:
+            click.confirm("Apply?", abort=True)
+            console.print("\n")
+
+        for s in (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM):
+            signal.signal(s, signal.SIG_IGN)
+
+        with halo.Halo(text="Loading", spinner="dots") as spinner:
+            spinner.text = "Applying changes"
+            t_start = time.time()
+            gdbt.state.PlanRunner(summary).apply(configuration, resources_current, {})
+
+            spinner.text = "Uploading resource state"
+            gdbt.state.StateLoader(configuration).upload(
+                path_relative,
+                {
+                    group_name: typing.cast(gdbt.resource.ResourceGroup, {})
+                    for group_name in resources_current
+                },
+            )
+            t_end = time.time()
+            duration = t_end - t_start
+            spinner.succeed(
+                rich.style.Style(color="green", bold=True).render(
+                    f"Done! Apply took {duration:.2f} seconds.\n"
+                )
+            )
+        os._exit(0)
+    except gdbt.errors.Error as exc:
+        console.print(f"[red][b]ERROR[/b] {exc.text}")
         raise SystemExit(1)
 
 
@@ -227,6 +355,7 @@ main.add_command(version)
 main.add_command(validate)
 main.add_command(plan)
 main.add_command(apply)
+main.add_command(destroy)
 
 if __name__ == "__main__":
     main()
