@@ -8,7 +8,7 @@
 - [Reference](#reference)
   - [Concepts](#concepts)
   - [Global configuration](#global-configuration)
-  - [Resources](#resources)
+  - [Resource definitions](#resource-definitions)
   - [CLI](#cli)
 - [Development](#development)
   - [Prerequisites](#prerequisites)
