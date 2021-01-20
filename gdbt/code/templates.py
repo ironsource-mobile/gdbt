@@ -45,11 +45,11 @@ class Template(abc.ABC):
         pass
 
     def resolve_vars(
-        self, configuration: Configuration, name: str, update: bool = False
+        self, configuration: Configuration, base: str, name: str, update: bool = False
     ) -> typing.Tuple[typing.Dict[str, typing.Any], typing.Dict[str, typing.Any]]:
         try:
             evaluations_resolved = {}
-            lock = EvaluationLock(name)
+            lock = EvaluationLock(base, name)
             for evaluation_name, evaluation in (self.evaluations or {}).items():
                 evaluation_source = typing.cast(
                     EvaluationProvider, configuration.providers[evaluation.source]
@@ -86,9 +86,10 @@ class Template(abc.ABC):
         self,
         name: str,
         configuration: Configuration,
+        base: str,
         update: bool,
     ) -> typing.Dict[str, Resource]:
-        evaluations, lookups = self.resolve_vars(configuration, name, update)
+        evaluations, lookups = self.resolve_vars(configuration, base, name, update)
         resources = {}
         for item in self.resolve_loops(evaluations, lookups):
             resource_name = name

@@ -26,11 +26,13 @@ class Evaluation(abc.ABC):
 
 @attr.s
 class EvaluationLock:
+    base: str = attr.ib()
     name: str = attr.ib()
 
     @property
     def path(self) -> pathlib.Path:
-        return pathlib.Path(self.name).with_suffix(".lock")
+        path = (pathlib.Path(self.base) / self.name).with_suffix(".lock")
+        return path
 
     def load(
         self, name: str, hash: str

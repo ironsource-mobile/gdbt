@@ -6,7 +6,9 @@
 
 - [Installation](#installation)
 - [Reference](#reference)
-  - [Configuration](#configuration)
+  - [Concepts](#concepts)
+  - [Global configuration](#global-configuration)
+  - [Resources](#resources)
   - [CLI](#cli)
 - [Development](#development)
   - [Prerequisites](#prerequisites)
@@ -23,71 +25,88 @@ To install GDBT you can use this one-liner:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/SupersonicAds/gdbt/main/install.sh)"
 ```
 
-If you prefer manual installation, start with downloading wheel file from the [release](https://github.com/SupersonicAds/gdbt/releases/latest) page.
+If you prefer manual installation, download wheel file from [release](https://github.com/SupersonicAds/gdbt/releases/latest) page.
 
 *Note:* make sure you keep the wheel file name as is, otherwise you won't be able to install it.
 
-The wheel can be installed by running:
+Install GDBT from wheel:
 
 ```bash
-pip3 install ./gdbt-1.0.0-py3-none-any.whl
+pip3 install ./gdbt-2.0.0-py3-none-any.whl
 ```
 
 Refer to *[CLI reference](#cli)* for further info.
 
 ## Reference
 
-### Configuration
+### Concepts
 
-Configuration is written in YAML, and there are 2 kinds: global configuration stored in `config.yaml` file and resources stored in `resources` directory.
+**Resource**. A single object in Grafana, either folder or a dashboard.
 
-#### Global configuration
+**Resource definition**. GDBT configuration file. Describes resource kind and its model as well as relevant lookups, evaluations and loops.
 
-Here's an example of `config.yaml`:
+**Scope**. A subdirectory of the whole GDBT configuration that includes a subset of resource definitions. You can run GDBT against any available scope, keeping other resources unaffected. This can be done by either running GDBT from a subdirectory or using `-s` / `--scope` option.
 
-```yaml
-kind: config
-providers:
-  example-grafana:
-    kind: grafana
-    endpoint: https://grafana.example.com
-    token: ZXhhbXBsZQ==
-  example-prometheus:
-    kind: prometheus
-    endpoint: http://prometheus.example.com:8248
-  s3:
-    kind: s3
-    bucket: example-gdbt-state
-    path: state.json
-state: s3
+**Lookup**. Static key-value configuration, useful for mapping or easy template variable modification. Available as `lookups` dictionary in the template.
+
+**Evaluation**. Dynamic variant of lookup. Can be used to retrieve values at runtime, for example — fetch a list of metric label values from Prometheus.
+
+**Evaluation lock**. Evaluations are cached in lock files to make sure that identical code *always* generates identical resource set. The lock files are stored beside resource definitions with the same filename and `.lock` extension. To update the lock file, run your command with `-u` or `--update` flag. Locks are updated automatically when relevant evaluation definition is changed.
+
+**Loop**. Allows you to iterate over an array, making a separate resource for each array item. The iterable can be provided from an evaluation or a lookup. Current item is available in the template as `loop.item`.
+
+### Global configuration
+
+Used for global preferences, like defining providers or state storage configuration. It is written in TOML and always resides in the root directory of your configuration as `config.toml`.
+
+Example configuration:
+
+```toml
+[providers]
+
+[providers.example-grafana]
+kind = "grafana"
+endpoint = "https://grafana.example.com"
+token = "$GRAFANA_TOKEN"
+
+[providers.example-prometheus]
+kind = "prometheus"
+endpoint = "http://prometheus.example.com:8248"
+
+[providers.state-s3]
+kind = "s3"
+bucket = "example-gdbt-state"
+
+[state]
+provider = "state-s3"
+
+[concurrency]
+threads = 16
+
 ```
 
-- `kind`: should be `config`
 - `providers`: provider definitions:
   - `kind`: provider kind, one of `grafana`, `prometheus` (for evaluations), `s3`, `consul`, `file` (for state storage)
   - *other provider-specific parameters*
-- `state`: name of provider that will be used for state storage
+- `state`: state storage preferences
+  - `provider`: name of provider used for state storage (*at the moment only S3 is supported*)
+- `concurrency`: parallelism preferences
+  - `threads`: how many threads to run for HTTP requests to APIs (*Note: you may experience heavy API rate limiting if you set this value too high, so try to find a sweet spot considering your resource limitations*)
 
-#### Resources
+You can use environment variables inside this configuration as `"$VARIABLE_NAME"`. Note: these should be enclosed in quotes.
+
+### Resource definitions
 
 There are 2 kinds of resources: `dashboard` and `folder`, each of these corresponding to relevant Grafana entities.
 
-##### Concepts
-
-- **Lookups**: a static key-value configuration, available as `lookups` dictionary in templates. Useful for mapping or easy template variable modification.
-- **Evaluations**: a dynamic variant of lookups, available as `evaluations` dictionary in templates. Can retrieve values dynamically, for example — a list of label values from a metric in Prometheus.
-- **Loop**: a mechanism to iterate over a specific variable, making a separate resource for each item. The item itself is available in template as `item` variable.
-
-##### Configuration
-
-Resource file name (without extension) is designated as the resource *uid*.
+Path to the resource definition relative to configuration root (without `.yaml` extension) is designated as the resource identifier. When resource definition produces multiple resources (e.g. when using `loop`), the loop item value is appended to resource identifier with a colon symbol (`example/resource:foo`, `example/resource:bar`).
 
 Example `dashboard` resource:
 
 ```yaml
 kind: dashboard
 provider: example-grafana
-folder: example-folder
+folder: example/foo/folder
 evaluations:
   example-services:
     kind: prometheus
@@ -106,22 +125,22 @@ model: |
     "panels": [
       {
         "alert": {
-          "name": "CPU usage high in {{ item }} service",
+          "name": "CPU usage high in {{ loop.item }} service",
           "notifications": [
             {
-              "uid": "{{ service_notification_channel[item] | default(service_notification_channel.DEFAULT) }}"
+              "uid": "{{ service_notification_channel[loop.item] | default(service_notification_channel.DEFAULT) }}"
             }
           ]
         },
         "targets": [
           {
-            "expr": "avg by (service)(cpu_user_usage{service='{{ item }}'})",
+            "expr": "avg by (service)(cpu_user_usage{service='{{ loop.item }}'})",
           }
         ]
       }
     ],
-    "tags": ["example", "cpu", "{{ item }}"],
-    "title": "System CPU usage ({{ item }})"
+    "tags": ["example", "cpu", "{{ loop.item }}"],
+    "title": "System CPU usage ({{ loop.item }})"
   }
 ```
 
@@ -140,7 +159,7 @@ model: |
 
 - `kind`: either of `folder`, `dashboard`
 - `provider`: name of Grafana provider this resource will be applied to
-- `folder` *(only for `dashboard` kind)*: uid of folder the dashboard will be created in
+- `folder` *(only for `dashboard` kind)*: resource identifier of folder the dashboard will be created in
 - `evaluations` *(optional)*: dynamic lookups:
   - `kind`: evaluation kind, only `prometheus` is supported at the moment
   - `source`: provider name to run the evaluation against
@@ -152,9 +171,9 @@ model: |
 
 See [Jinja2 documentation](https://jinja.palletsprojects.com/en/2.11.x/templates/) for more info about templates.
 
-##### Caveats
+#### Caveats
 
-Grafana forbids creating resources with identical titles. Because of this, be extra careful when using `loop`, ensure that you include `{{ item }}` as a part of `title` — otherwise you will get unexpected cryptic errors from Grafana.
+Grafana forbids creating resources with identical titles. Because of this, be extra careful when using `loop`, ensure that you include `{{ loop.item }}` as a part of `title` — otherwise you will get unexpected cryptic errors from Grafana.
 
 ### CLI
 
@@ -166,15 +185,19 @@ Use `--help` for information on specific command. The synopsis for each command 
 
 #### Commands
 
-- `validate`: Validates the configuration syntax.
-- `plan`: Generates an execution plan for GDBT.
-- `apply`: Builds or changes Grafana resources according to the configuration.
-- `version`: Prints GDBT version.
-
-#### Options
-
-- `-c`, `--config-dir`: Configuration directory. Defaults to current working directory.
-- `--debug`: Enables debug mode.
+- `validate`: Validate syntax:
+  - `-s` / `--scope`: Scope (default: current working directory).
+- `plan`: Generates an execution plan for GDBT:
+  - `-u` / `--update`: Update evaluation locks.
+- `apply`: Build or change Grafana resources according to the configuration in the current scope:
+  - `-s` / `--scope`: Scope (default: current working directory);
+  - `-u` / `--update`: Update evaluation locks;
+  - `-y` / `--auto-approve`: Do not ask for confirmation.
+- `destroy`: Remove all defined resources within the current scope:
+  - `-s` / `--scope`: Scope (default: current working directory);
+  - `-u` / `--update`: Update evaluation locks;
+  - `-y` / `--auto-approve`: Do not ask for confirmation.
+- `version`: Print GDBT version.
 
 ## Development
 

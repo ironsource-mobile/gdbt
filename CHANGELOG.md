@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.1.0] - 2021-01-20
+
+### Added
+
+- Added check for updates
+
+### Fixed
+
+- Fixed issue with failing to find lock files when current scope is not the configuration root
+
 ## [2.0.0] - 2021-01-18
 
 ### Added
