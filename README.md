@@ -101,7 +101,57 @@ There are 2 kinds of resources: `dashboard` and `folder`, each of these correspo
 
 Path to the resource definition relative to configuration root (without `.yaml` extension) is designated as the resource identifier. When resource definition produces multiple resources (e.g. when using `loop`), the loop item value is appended to resource identifier with a colon symbol (`example/resource:foo`, `example/resource:bar`).
 
-Example `dashboard` resource:
+Example `dashboard` resource with multiple notification channels per service:
+
+```yaml
+kind: dashboard
+provider: example-grafana
+folder: example/foo/folder
+evaluations:
+  example-services:
+    kind: prometheus
+    source: example-prometheus
+    metric: "sum(cpu_user_usage) by (service)[30m]"
+    label: service
+loop: evaluations.example-services
+lookups:
+  service_notification_channel:
+    service1:
+      - victorops-team1
+      - slack-team1
+    service2:
+      - victorops-team1
+      - mail-all
+    service3:
+      - slack-team2
+    DEFAULT:
+      - mail-all
+model: |
+  {
+    "panels": [
+      {
+        "alert": {
+          "name": "CPU usage high in {{ loop.item }} service",
+          "notifications": [
+            {%- for notification_channel in lookups.service_notification_channel[loop.item] | default(lookups.service_notification_channel.DEFAULT) %}
+            {
+              "uid": "{$ notification_channel -$}"
+            }{% if not loop.last %},{% endif %}{% endfor %}
+          ]
+        },
+        "targets": [
+          {
+            "expr": "avg by (service)(cpu_user_usage{service='{{ loop.item }}'})",
+          }
+        ]
+      }
+    ],
+    "tags": ["example", "cpu", "{{ loop.item }}"],
+    "title": "System CPU usage ({{ loop.item }})"
+  }
+```
+
+Example `dashboard` resource with one notification channel per service:
 
 ```yaml
 kind: dashboard
@@ -128,7 +178,7 @@ model: |
           "name": "CPU usage high in {{ loop.item }} service",
           "notifications": [
             {
-              "uid": "{{ service_notification_channel[loop.item] | default(service_notification_channel.DEFAULT) }}"
+              "uid": "{$ lookups.service_notification_channel[loop.item] | default(lookups.service_notification_channel.DEFAULT) $}"
             }
           ]
         },
@@ -143,6 +193,7 @@ model: |
     "title": "System CPU usage ({{ loop.item }})"
   }
 ```
+
 
 *Note: `model` in the above example was stripped and only relevant fields were left. Please refer to Grafana documentation for valid resource model JSON format.
 
