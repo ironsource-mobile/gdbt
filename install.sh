@@ -39,7 +39,7 @@ else
 fi
 
 echo -en "Installing GDBT..."
-$PIP install --upgrade -qq "$WHEEL_FILE"
+$PIP install --upgrade --upgrade-strategy eager -qq "$WHEEL_FILE"
 rm -rf $WHEEL_DIR >/dev/null 2>&1 || true
 echo -en "done\n"
 
