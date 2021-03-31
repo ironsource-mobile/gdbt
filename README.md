@@ -1,6 +1,6 @@
 # GDBT (Grafana Dashboard Templater)
 
-**GDBT** is an infrastructure-as-code tool for [Grafana dashboards](https://github.com/SupersonicAds/grafana-dashboards). This is similar to Terraform, but specializes on templating dashboards based on various evaluations.
+**GDBT** is an infrastructure-as-code tool for Grafana dashboards. This is similar to Terraform, but specializes on templating dashboards based on various evaluations.
 
 ## Table of Contents
 
