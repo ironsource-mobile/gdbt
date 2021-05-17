@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.2.0] - 2021-05-18
+
 ### Added
 
 - Added support for custom HTTP timeouts in Grafana and Prometheus providers
@@ -116,12 +118,14 @@ All notable changes to this project will be documented in this file.
 
 - Initial version
 
-[unreleased]: https://github.com/SupersonicAds/spotcli/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/SupersonicAds/spotcli/compare/v1.4.1...v2.0.0
-[1.4.1]: https://github.com/SupersonicAds/spotcli/compare/v1.4.0...v1.4.1
-[1.4.0]: https://github.com/SupersonicAds/spotcli/compare/v1.3.0...v1.4.0
-[1.3.0]: https://github.com/SupersonicAds/spotcli/compare/v1.2.1...v1.3.0
-[1.2.1]: https://github.com/SupersonicAds/spotcli/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/SupersonicAds/spotcli/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/SupersonicAds/spotcli/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/SupersonicAds/spotcli/compare/2c07324...v1.0.0
+[unreleased]: https://github.com/SupersonicAds/gdbt/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/SupersonicAds/gdbt/compare/v2.1.0...v2.2.0
+[2.1.0]: https://github.com/SupersonicAds/gdbt/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/SupersonicAds/gdbt/compare/v1.4.1...v2.0.0
+[1.4.1]: https://github.com/SupersonicAds/gdbt/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/SupersonicAds/gdbt/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/SupersonicAds/gdbt/compare/v1.2.1...v1.3.0
+[1.2.1]: https://github.com/SupersonicAds/gdbt/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/SupersonicAds/gdbt/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/SupersonicAds/gdbt/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/SupersonicAds/gdbt/compare/2c07324...v1.0.0

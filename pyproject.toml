@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gdbt"
-version = "2.1.0"
+version = "2.2.0"
 description = "Use Infrastructure as Code to provision and manage Grafana Dashboards from Templates"
 authors = ["Dmitry Kovalenko <dmytro.kovalenko@ironsrc.com>"]
 license = "MIT"
