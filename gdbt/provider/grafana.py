@@ -14,6 +14,7 @@ from gdbt.provider import Provider
 class GrafanaProvider(Provider):
     endpoint: str = attr.ib()
     token: typing.Optional[str] = attr.ib()
+    timeout: typing.Optional[int] = attr.ib(default=5)
 
     @property
     def client(self) -> grafana_api.grafana_face.GrafanaFace:
@@ -24,5 +25,6 @@ class GrafanaProvider(Provider):
             port=port,
             protocol=endpoint.scheme,
             auth=self.token,
+            timeout=self.timeout,
         )
         return client

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added support for custom HTTP timeouts in Grafana and Prometheus providers
+
+### Fixed
+
+- Fixed crashing on non-semver releases on GitHub, now it silently proceeds instead
+
 ## [2.1.0] - 2021-01-20
 
 ### Added

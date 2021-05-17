@@ -8,7 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.9"
 click = "^7.1.2"
-rich = "^9.2.0"
+rich = "^10.2.1"
 attrs = "^20.3.0"
 grafana-api = "^1.0.3"
 requests = "^2.25.0"
