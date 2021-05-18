@@ -180,14 +180,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "durations"
-version = "0.3.3"
-description = "UNKNOWN"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "envtoml"
 version = "0.1.2"
 description = "A simple way of using environment variables in TOML configs (via interpolation)"
@@ -674,7 +666,7 @@ brotli = ["brotlipy (>=0.6.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "956c899e301bacec16ad4b69d89e0a5202be36cde6c5a792b27a0b230e9a942c"
+content-hash = "470670ed48c30b2387ba70d4d02e4b94aa5b4d45cfcbfdfc1cbacf3ff38d0ea1"
 
 [metadata.files]
 appdirs = [
@@ -742,9 +734,6 @@ dictdiffer = [
 ]
 dpath = [
     {file = "dpath-2.0.1.tar.gz", hash = "sha256:bea06b5f4ff620a28dfc9848cf4d6b2bfeed34238edeb8ebe815c433b54eb1fa"},
-]
-durations = [
-    {file = "durations-0.3.3.tar.gz", hash = "sha256:820ffe09c390469dc621b6a0aa46d3a624b6dadf09b439e175696b6f6b77ef2f"},
 ]
 envtoml = [
     {file = "envTOML-0.1.2-py3-none-any.whl", hash = "sha256:7f376003d907f02f623da82eaba98e287c03f10db0a9a0160adb8caf26256530"},

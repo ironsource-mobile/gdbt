@@ -3,7 +3,6 @@ import typing
 
 import attr
 import deserialize  # type: ignore
-import durations  # type: ignore
 import jsonpath_ng  # type: ignore
 import requests
 

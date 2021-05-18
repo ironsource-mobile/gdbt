@@ -19,7 +19,6 @@ deserialize = "^1.8.0"
 dpath = "^2.0.1"
 python-consul2 = "^0.1.5"
 halo = "^0.0.31"
-durations = "^0.3.3"
 envtoml = "^0.1.2"
 python-configuration = {extras = ["toml", "yaml"], version = "^0.8.1"}
 s3path = "^0.2.205"
