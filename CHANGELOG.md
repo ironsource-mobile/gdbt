@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.2.1] - 2021-05-25
+
 ### Added
 
 - Added HTTP(S) proxy support in Prometheus provider
@@ -123,7 +125,8 @@ All notable changes to this project will be documented in this file.
 
 - Initial version
 
-[unreleased]: https://github.com/SupersonicAds/gdbt/compare/v2.2.0...HEAD
+[unreleased]: https://github.com/SupersonicAds/gdbt/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/SupersonicAds/gdbt/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/SupersonicAds/gdbt/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/SupersonicAds/gdbt/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/SupersonicAds/gdbt/compare/v1.4.1...v2.0.0
