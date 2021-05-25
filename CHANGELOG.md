@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added HTTP(S) proxy support in Prometheus provider
+- Added HTTP connection pooling in Prometheus provider
+
 ## [2.2.0] - 2021-05-18
 
 ### Added

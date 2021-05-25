@@ -10,11 +10,16 @@ from gdbt.dynamic import Evaluation
 from gdbt.provider import EvaluationProvider, Provider
 
 
+http = requests.Session()
+
+
 @deserialize.downcast_identifier(Provider, "prometheus")
 @attr.s
 class PrometheusProvider(EvaluationProvider):
     endpoint: str = attr.ib()
     timeout: typing.Optional[int] = attr.ib(default=5)
+    http_proxy: typing.Optional[str] = attr.ib(default=None)
+    https_proxy: typing.Optional[str] = attr.ib(default=None)
 
     @property
     def client(self) -> None:
@@ -22,8 +27,15 @@ class PrometheusProvider(EvaluationProvider):
 
     def query(self, query: str) -> typing.List[typing.Any]:
         url = self.endpoint.rstrip("/") + "/api/v1/query"
-        params = {"query": query}
-        response = requests.get(url, params, timeout=self.timeout)
+        response = http.get(
+            url,
+            params={"query": query},
+            timeout=self.timeout,
+            proxies={
+                "http": self.http_proxy,
+                "https": self.https_proxy or self.http_proxy,
+            },
+        )
         response.raise_for_status()
         answer = response.json().get("data").get("result")
         return answer

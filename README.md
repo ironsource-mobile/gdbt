@@ -72,6 +72,8 @@ token = "$GRAFANA_TOKEN"
 [providers.example-prometheus]
 kind = "prometheus"
 endpoint = "http://prometheus.example.com:8248"
+http_proxy = "http://proxy.example.com:8080"
+https_proxy = "http://proxy.example.com:8443"
 
 [providers.state-s3]
 kind = "s3"
@@ -193,7 +195,6 @@ model: |
     "title": "System CPU usage ({{ loop.item }})"
   }
 ```
-
 
 *Note: `model` in the above example was stripped and only relevant fields were left. Please refer to Grafana documentation for valid resource model JSON format.
 
@@ -350,4 +351,3 @@ If you find the above instructions unclear, take a look at previous releases or 
 This repo uses GitHub Actions as CI/CD tool. Pipeline config can be found in *.github/workflows/ci-release.yaml* file.
 
 As of now, the only pipeline is *Release*: it builds the wheel and creates a release in GitHub. It is triggered on tags that start with *v* prefix.
-
