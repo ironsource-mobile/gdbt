@@ -25,14 +25,14 @@ To install GDBT you can use this one-liner:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/SupersonicAds/gdbt/main/install.sh)"
 ```
 
-If you prefer manual installation, download wheel file from [release](https://github.com/SupersonicAds/gdbt/releases/latest) page.
+### Alternative method
 
-*Note:* make sure you keep the wheel file name as is, otherwise you won't be able to install it.
+If you prefer manual installation, download wheel file from [release](https://github.com/SupersonicAds/gdbt/releases/latest) page. Make sure you keep the wheel file name as is, otherwise you won't be able to install it.
 
 Install GDBT from wheel:
 
 ```bash
-pip3 install ./gdbt-2.0.0-py3-none-any.whl
+pip3 install ./gdbt-2.2.1-py3-none-any.whl
 ```
 
 Refer to *[CLI reference](#cli)* for further info.
