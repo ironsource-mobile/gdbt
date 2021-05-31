@@ -11,9 +11,11 @@
   - [Resource definitions](#resource-definitions)
   - [CLI](#cli)
 - [Development](#development)
+  - [How does it work?](#how-does-it-work)
+  - [Standards](#standards)
   - [Prerequisites](#prerequisites)
   - [Using Poetry](#using-poetry)
-  - [Build](#build)
+  - [Building](#building)
   - [Releases](#releases)
   - [CI/CD](#cicd)
 
@@ -257,6 +259,35 @@ Before starting, please read [Contributing guidelines](https://github.com/Supers
 
 *Note:* This repo uses *main* as a default branch. Make sure you don't use *master* accidentally.
 
+### How does it work?
+
+Here's a flow of GDBT code:
+
+1. Query GitHub for new GDBT releases. If a valid release with a latter version is found, display a message, otherwise skip to the next step.
+2. Read evaluation cache from lock files. If lock file hash doesn't match, or `-u` flag was provided, query Prometheus (VictoriaMetrics) and write the new evaluation result to the lock file.
+3. If `loop` option is provided, assign a *resource* for each loop item. Otherwise, a single resource is assigned.
+4. For every resource, query Grafana and fetch JSON model of a dashboard (or a folder).
+5. Calculate the difference between the configured and actual state of resources, and make it into a plan.
+6. If the command is `apply` — apply the plan by querying Grafana and sending JSON models of the resources
+
+### Source code structure
+
+All source code can be found under `gdbt` directory:
+
+- **`code`** — configuration and templates parsing
+- **`dynamic`** — implementation of *lookup* and *evaluation* concepts
+- **`errors`** — error handling
+- **`provider`** — provider-specific code which implements provider interface
+- **`resource`** — implementation of Grafana Resource object
+- **`state`** — state and plan calculation related code
+- **`cli.py`** — main program, definition of CLI commands
+
+### Standards
+
+GDBT code shall follow OOP patterns. You can learn more [here](https://realpython.com/python3-object-oriented-programming/). Code style shall be [Black](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html). Code shall be formatted using Black formatter, [isort](https://pycqa.github.io/isort/) and linted with [flake8](https://flake8.pycqa.org/en/latest/#).
+All dependencies shall be managed using [Poetry](https://python-poetry.org/docs).
+GDBT releases shall strictly follow [Semantic Versioning](https://semver.org) scheme.
+
 ### Prerequisites
 
 To work on this project you need:
@@ -310,7 +341,7 @@ Please specify any additional dependencies in module docstring.
 
 This tool uses Python docstrings for documentation purposes. Those docstrings should follow [Google's docstrings style guide](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html). You should use docstrings module documentation, reference, TODOs etc.
 
-### Build
+### Building
 
 This package is distributed as a [wheel](https://realpython.com/python-wheels/). This simplifies installation and dependency management on target systems.
 
