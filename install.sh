@@ -5,7 +5,7 @@ trap "" SIGINT
 [ -z "$LC_ALL" ] && export LC_ALL=C.UTF-8
 [ -z "$LANG" ] && export LANG=C.UTF-8
 
-DOWNLOAD_URL=$(curl -fsSL https://api.github.com/repos/SupersonicAds/gdbt/releases/latest \
+DOWNLOAD_URL=$(curl -fsSL https://api.github.com/repos/ironsource-mobile/gdbt/releases/latest \
         | grep browser_download_url \
         | cut -d '"' -f 4)
 WHEEL_DIR=$(mktemp -d 2>/dev/null)

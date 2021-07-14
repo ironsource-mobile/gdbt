@@ -20,8 +20,8 @@ import gdbt.errors
 import gdbt.resource
 import gdbt.state
 
-UPDATE_URL = "https://api.github.com/repos/SupersonicAds/gdbt/releases/latest"
-UPDATE_COMMAND = 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/SupersonicAds/gdbt/main/install.sh)"'
+UPDATE_URL = "https://api.github.com/repos/ironsource-mobile/gdbt/releases/latest"
+UPDATE_COMMAND = 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/ironsource-mobile/gdbt/main/install.sh)"'
 
 console = rich.console.Console(highlight=False)
 rich.traceback.install()

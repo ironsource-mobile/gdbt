@@ -24,12 +24,12 @@
 To install GDBT you can use this one-liner:
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/SupersonicAds/gdbt/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ironsource-mobile/gdbt/main/install.sh)"
 ```
 
 ### Alternative method
 
-If you prefer manual installation, download wheel file from [release](https://github.com/SupersonicAds/gdbt/releases/latest) page. Make sure you keep the wheel file name as is, otherwise you won't be able to install it.
+If you prefer manual installation, download wheel file from [release](https://github.com/ironsource-mobile/gdbt/releases/latest) page. Make sure you keep the wheel file name as is, otherwise you won't be able to install it.
 
 Install GDBT from wheel:
 
@@ -255,7 +255,7 @@ Use `--help` for information on specific command. The synopsis for each command 
 
 ## Development
 
-Before starting, please read [Contributing guidelines](https://github.com/SupersonicAds/gdbt/blob/main/.github/CONTRIBUTING.md).
+Before starting, please read [Contributing guidelines](https://github.com/ironsource-mobile/gdbt/blob/main/.github/CONTRIBUTING.md).
 
 *Note:* This repo uses *main* as a default branch. Make sure you don't use *master* accidentally.
 
@@ -369,8 +369,8 @@ Generally, you should test your changes before creating a release. After that, c
 3. Add current date in ISO format (`YYYY-DD-MM`) after the header (e.g., `[1.2.3] - 2011-12-13`).
 4. Add new `[Unreleased]` H2 header above all version headers.
 5. Add compare link at the bottom of *CHANGELOG.md* as follows:
-`[1.2.3]: https://github.com/SupersonicAds/gdbt/compare/v1.2.2...v1.2.3` right below `[unreleased]` link (replace `1.2.3` with the new release version, `1.2.2` with the previous release version).
-6. Change version in `[unreleased]` link at the bottom of *CHANGELOG.md* to the new release version (e.g., `[unreleased]: https://github.com/SupersonicAds/gdbt/compare/v1.2.3...HEAD`).
+`[1.2.3]: https://github.com/ironsource-mobile/gdbt/compare/v1.2.2...v1.2.3` right below `[unreleased]` link (replace `1.2.3` with the new release version, `1.2.2` with the previous release version).
+6. Change version in `[unreleased]` link at the bottom of *CHANGELOG.md* to the new release version (e.g., `[unreleased]: https://github.com/ironsource-mobile/gdbt/compare/v1.2.3...HEAD`).
 7. Commit the changes to *main* branch. Commit message should be `Release v1.2.3`.
 8. Create a release tag: `git tag v1.2.3`. This should be a *lightweight* tag, not an annotated one.
 9. Push the changes and tag to GitHub: `git push && git push --tags`.
