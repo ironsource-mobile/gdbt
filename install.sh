@@ -6,8 +6,7 @@ trap "" SIGINT
 [ -z "$LANG" ] && export LANG=C.UTF-8
 
 DOWNLOAD_URL=$(curl -fsSL https://api.github.com/repos/ironsource-mobile/gdbt/releases/latest \
-        | grep browser_download_url \
-        | cut -d '"' -f 4)
+        | jq -r '.["assets"][0]["browser_download_url"]')
 WHEEL_DIR=$(mktemp -d 2>/dev/null)
 WHEEL_FILE="$WHEEL_DIR/${DOWNLOAD_URL##*/}"
 trap "rm -rf $WHEEL_DIR >/dev/null 2>&1 || true && echo \"ERROR: GDBT wasn't installed\" && exit 1" ERR
