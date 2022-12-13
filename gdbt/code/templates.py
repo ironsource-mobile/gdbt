@@ -124,11 +124,13 @@ class Dashboard(Template):
         try:
             model_dict = json.loads(model)
         except json.JSONDecodeError as e:
-            with open('/tmp/invalid_json', 'w') as f:
-                f.write(model + '\n')
-            print(model + '\n')
-            print('Error: Invalid JSON: %s. Generated invalid JSON can be viewed in /tmp/invalid_json and was '
-                  'printed above this error message.' % e)
+            with open("/tmp/invalid_json", "w") as f:
+                f.write(model + "\n")
+            print(model + "\n")
+            print(
+                "Error: Invalid JSON: %s. Generated invalid JSON can be viewed in /tmp/invalid_json and was "
+                "printed above this error message." % e
+            )
             raise
         model_dict.pop("id", None)
         folder_uid = self.format_uid(self.folder)
