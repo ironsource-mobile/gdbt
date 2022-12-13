@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.2.3] - 2022-12-13
+
+### Added
+
+- Clearer error when generating an invalid json
+
 ## [2.2.2] - 2021-06-15
 
 ### Changed
@@ -132,7 +138,8 @@ All notable changes to this project will be documented in this file.
 
 - Initial version
 
-[unreleased]: https://github.com/ironsource-mobile/gdbt/compare/v2.2.2...HEAD
+[unreleased]: https://github.com/ironsource-mobile/gdbt/compare/v2.2.3...HEAD
+[2.2.3]: https://github.com/ironsource-mobile/gdbt/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/ironsource-mobile/gdbt/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/ironsource-mobile/gdbt/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/ironsource-mobile/gdbt/compare/v2.1.0...v2.2.0
