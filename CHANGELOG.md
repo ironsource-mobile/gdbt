@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Clearer error when generating an invalid json
+- Support for Python 3.10
 
 ## [2.2.2] - 2021-06-15
 
