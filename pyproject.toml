@@ -21,7 +21,7 @@ python-consul2 = "^0.1.5"
 halo = "^0.0.31"
 envtoml = "^0.1.2"
 python-configuration = {extras = ["toml", "yaml"], version = "^0.8.1"}
-s3path = "^0.2.205"
+s3path = "^0.3.4"
 dictdiffer = "^0.8.1"
 flatten-dict = "^0.3.0"
 backoff = "^1.10.0"
